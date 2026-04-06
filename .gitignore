@@ -8,9 +8,14 @@ __pycache__/
 .Python
 
 # Outputs gerados
-*.csv
 dominios.txt
 teste_dominios.txt
+# CSVs intermediários
+lojas_br*.csv
+lojas_manual.csv
+lojas_shopify*.csv
+teste_resultado.csv
+# leads_whatsapp.csv é commitado intencionalmente
 
 # IDE
 .vscode/
