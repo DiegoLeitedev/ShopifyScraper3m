@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>E-commerce Lead Scraper</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #1a1f2e 0%, #0f1117 100%);
+    border-bottom: 1px solid #2d3748;
+    padding: 18px 28px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  header h1 { font-size: 18px; font-weight: 700; color: #fff; flex: 1; }
+  header h1 span { color: #48bb78; }
+
+  .stat-bar {
+    display: flex; gap: 0;
+    border-bottom: 1px solid #1a2030;
+    background: #12161f;
+  }
+  .stat { padding: 12px 24px; border-right: 1px solid #1a2030; text-align: center; min-width: 100px; }
+  .stat .num { font-size: 24px; font-weight: 700; color: #48bb78; }
+  .stat .lbl { font-size: 10px; color: #718096; text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+  .stat.wpp .num { color: #25D366; }
+  .stat.email-s .num { color: #fc8181; }
+  .stat.cnpj-s .num { color: #f6e05e; }
+
+  .toolbar {
+    padding: 12px 28px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    border-bottom: 1px solid #1a2030;
+  }
+  input[type=text] {
+    background: #1a2030; border: 1px solid #2d3748; color: #e2e8f0;
+    padding: 7px 13px; border-radius: 7px; font-size: 13px; width: 260px; outline: none;
+  }
+  input[type=text]:focus { border-color: #48bb78; }
+  select {
+    background: #1a2030; border: 1px solid #2d3748; color: #e2e8f0;
+    padding: 7px 13px; border-radius: 7px; font-size: 13px; outline: none; cursor: pointer;
+  }
+  .btn {
+    padding: 7px 14px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-green { background: #25D366; color: #fff; }
+  .btn-blue  { background: #3182ce; color: #fff; }
+  .btn-gray  { background: #2d3748; color: #a0aec0; }
+
+  .table-wrap { overflow-x: auto; padding: 0 28px 32px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    background: #1a2030; color: #a0aec0; text-transform: uppercase;
+    font-size: 10.5px; letter-spacing: .5px; padding: 9px 12px;
+    text-align: left; position: sticky; top: 0; z-index: 1;
+    border-bottom: 1px solid #2d3748; white-space: nowrap; cursor: pointer; user-select: none;
+  }
+  thead th:hover { color: #48bb78; }
+  thead th.sorted { color: #48bb78; }
+  tbody tr { border-bottom: 1px solid #181e2a; transition: background .1s; }
+  tbody tr:hover { background: #1a2030; }
+  td { padding: 9px 12px; vertical-align: middle; }
+
+  /* Células especiais */
+  td.domain a { color: #63b3ed; text-decoration: none; font-weight: 600; }
+  td.domain a:hover { text-decoration: underline; }
+  td.wpp-cell a {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #145c32; color: #25D366; padding: 4px 10px;
+    border-radius: 5px; text-decoration: none; font-weight: 600; font-size: 12px;
+    white-space: nowrap;
+  }
+  td.wpp-cell a:hover { background: #1a7a42; }
+  td.email-cell a { color: #fc8181; text-decoration: none; }
+  td.instagram-cell { color: #b794f4; }
+  td.cnpj-cell { font-family: monospace; color: #f6e05e; font-size: 11px; }
+  td.empty { color: #4a5568; font-style: italic; }
+
+  /* Platform badges */
+  .plat {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+  }
+  .plat-shopify       { background: #1a3826; color: #48bb78; }
+  .plat-tray          { background: #1a2a4a; color: #63b3ed; }
+  .plat-nuvemshop     { background: #2d1f4a; color: #b794f4; }
+  .plat-lojaintegrada { background: #3d2a10; color: #ed8936; }
+  .plat-vtex          { background: #2d1a1a; color: #fc8181; }
+  .plat-woocommerce   { background: #1a1a3d; color: #7f9cf5; }
+  .plat-outro         { background: #1a2030; color: #718096; }
+
+  .empty-state { text-align: center; padding: 60px; color: #4a5568; font-size: 15px; }
+
+  .upload-area {
+    margin: 40px auto; max-width: 460px; text-align: center;
+    border: 2px dashed #2d3748; border-radius: 12px; padding: 40px; cursor: pointer;
+  }
+  .upload-area:hover { border-color: #48bb78; }
+  .upload-area p { color: #718096; margin-top: 8px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>E-commerce Lead Scraper <span>BR</span></h1>
+  <label class="btn btn-gray" style="font-size:12px">
+    📂 Carregar CSV
+    <input type="file" id="fileInput" accept=".csv" style="display:none">
+  </label>
+  <button class="btn btn-blue" onclick="exportFiltered()">⬇ Exportar CSV filtrado</button>
+</header>
+
+<div class="stat-bar">
+  <div class="stat"><div class="num" id="sTotal">0</div><div class="lbl">Lojas</div></div>
+  <div class="stat wpp"><div class="num" id="sWpp">0</div><div class="lbl">WhatsApp</div></div>
+  <div class="stat email-s"><div class="num" id="sEmail">0</div><div class="lbl">E-mail</div></div>
+  <div class="stat cnpj-s"><div class="num" id="sCnpj">0</div><div class="lbl">CNPJ</div></div>
+  <div class="stat"><div class="num" id="sPlat" style="font-size:13px;padding-top:4px">—</div><div class="lbl">Plataformas</div></div>
+</div>
+
+<div class="toolbar">
+  <input type="text" id="search" placeholder="Filtrar por domínio, nome, CNPJ...">
+  <select id="filterPlat">
+    <option value="">Todas as plataformas</option>
+    <option value="shopify">Shopify</option>
+    <option value="nuvemshop">Nuvemshop</option>
+    <option value="tray">Tray</option>
+    <option value="lojaintegrada">Loja Integrada</option>
+    <option value="vtex">VTEX</option>
+    <option value="woocommerce">WooCommerce</option>
+  </select>
+  <select id="filterContact">
+    <option value="">Todos os contatos</option>
+    <option value="whatsapp">Tem WhatsApp</option>
+    <option value="email">Tem E-mail</option>
+    <option value="cnpj">Tem CNPJ</option>
+  </select>
+</div>
+
+<div id="uploadPrompt" class="upload-area" onclick="document.getElementById('fileInput').click()">
+  <div style="font-size:44px">🛍️</div>
+  <strong style="color:#a0aec0">Clique ou arraste um CSV aqui</strong>
+  <p>Gerado pelo E-commerce Lead Scraper</p>
+</div>
+
+<div class="table-wrap" id="tableWrap" style="display:none">
+  <table id="dataTable">
+    <thead id="thead"></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<script>
+const COLS = [
+  { key: 'dominio',     label: 'Domínio',     render: v => `<td class="domain"><a href="https://${v}" target="_blank">${v}</a></td>` },
+  { key: 'plataforma',  label: 'Plataforma',  render: v => `<td><span class="plat plat-${(v||'outro').toLowerCase()}">${v||'—'}</span></td>` },
+  { key: 'nome_loja',   label: 'Nome',        render: v => `<td>${v||'<span class="empty">—</span>'}</td>` },
+  { key: 'whatsapp',    label: 'WhatsApp',    render: v => v
+      ? `<td class="wpp-cell"><a href="https://wa.me/55${v.replace(/\D/g,'')}" target="_blank">💬 ${v}</a></td>`
+      : '<td class="empty">—</td>' },
+  { key: 'telefone',    label: 'Telefone',    render: v => `<td style="color:#68d391;white-space:nowrap">${v||'<span class="empty">—</span>'}</td>` },
+  { key: 'email',       label: 'E-mail',      render: v => v
+      ? `<td class="email-cell"><a href="mailto:${v}">${v}</a></td>`
+      : '<td class="empty">—</td>' },
+  { key: 'instagram',   label: 'Instagram',   render: v => v
+      ? `<td class="instagram-cell"><a href="https://instagram.com/${v.replace('@','')}" target="_blank" style="color:inherit;text-decoration:none">${v}</a></td>`
+      : '<td class="empty">—</td>' },
+  { key: 'cnpj',        label: 'CNPJ',        render: v => `<td class="cnpj-cell">${v||'<span class="empty">—</span>'}</td>` },
+  { key: 'razao_social',label: 'Razão Social',render: v => `<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v||''}">${v||'<span class="empty">—</span>'}</td>` },
+  { key: 'cidade',      label: 'Cidade',      render: v => `<td>${v||'<span class="empty">—</span>'}</td>` },
+  { key: 'estado',      label: 'UF',          render: v => `<td>${v||'<span class="empty">—</span>'}</td>` },
+  { key: 'produtos_count', label: 'Produtos', render: v => `<td style="text-align:right;color:#a0aec0">${v||'—'}</td>` },
+  { key: 'status',      label: 'Status',      render: v => `<td><span style="background:${v==='ativo'?'#1a3826':'#3d1a1a'};color:${v==='ativo'?'#48bb78':'#fc8181'};padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700">${v||'—'}</span></td>` },
+];
+
+let allRows = [], sortCol = null, sortDir = 1, filteredRows = [];
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim());
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = []; let cur = '', inQ = false;
+    for (const ch of line) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { vals.push(cur); cur = ''; }
+      else cur += ch;
+    }
+    vals.push(cur);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i]||'').trim());
+    return obj;
+  });
+}
+
+function buildHeader() {
+  const tr = document.createElement('tr');
+  COLS.forEach(({key, label}) => {
+    const th = document.createElement('th');
+    th.innerHTML = label + (sortCol === key ? (sortDir > 0 ? ' ▲' : ' ▼') : '');
+    if (sortCol === key) th.classList.add('sorted');
+    th.addEventListener('click', () => {
+      if (sortCol === key) sortDir *= -1; else { sortCol = key; sortDir = 1; }
+      render();
+    });
+    tr.appendChild(th);
+  });
+  document.getElementById('thead').innerHTML = '';
+  document.getElementById('thead').appendChild(tr);
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const platFilter = document.getElementById('filterPlat').value.toLowerCase();
+  const contactFilter = document.getElementById('filterContact').value;
+
+  let rows = allRows;
+  if (q) rows = rows.filter(r => Object.values(r).some(v => v.toLowerCase().includes(q)));
+  if (platFilter) rows = rows.filter(r => (r.plataforma||'').toLowerCase() === platFilter);
+  if (contactFilter === 'whatsapp') rows = rows.filter(r => r.whatsapp);
+  if (contactFilter === 'email')    rows = rows.filter(r => r.email);
+  if (contactFilter === 'cnpj')     rows = rows.filter(r => r.cnpj);
+
+  if (sortCol) {
+    rows = [...rows].sort((a, b) =>
+      (a[sortCol]||'').localeCompare(b[sortCol]||'', 'pt', {numeric:true}) * sortDir
+    );
+  }
+
+  filteredRows = rows;
+  buildHeader();
+
+  const tbody = document.getElementById('tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="20" class="empty-state">Nenhuma loja encontrada</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r =>
+    '<tr>' + COLS.map(({key, render}) => render(r[key]||'')).join('') + '</tr>'
+  ).join('');
+
+  // Stats
+  document.getElementById('sTotal').textContent  = allRows.length;
+  document.getElementById('sWpp').textContent    = allRows.filter(r => r.whatsapp).length;
+  document.getElementById('sEmail').textContent  = allRows.filter(r => r.email).length;
+  document.getElementById('sCnpj').textContent   = allRows.filter(r => r.cnpj).length;
+  const plats = [...new Set(allRows.map(r => r.plataforma).filter(Boolean))];
+  document.getElementById('sPlat').textContent   = plats.join(' · ') || '—';
+}
+
+function loadCSV(text) {
+  allRows = parseCSV(text);
+  document.getElementById('uploadPrompt').style.display = 'none';
+  document.getElementById('tableWrap').style.display = 'block';
+  render();
+}
+
+function exportFiltered() {
+  if (!filteredRows.length) return;
+  const headers = COLS.map(c => c.key);
+  const lines = [headers.join(',')];
+  filteredRows.forEach(r => {
+    lines.push(headers.map(h => `"${(r[h]||'').replace(/"/g,'""')}"`).join(','));
+  });
+  const blob = new Blob(['\uFEFF' + lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  new FileReader().onload = ev => loadCSV(ev.target.result);
+  const reader = new FileReader();
+  reader.onload = ev => loadCSV(ev.target.result);
+  reader.readAsText(f, 'utf-8');
+});
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('filterPlat').addEventListener('change', render);
+document.getElementById('filterContact').addEventListener('change', render);
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer.files[0]; if (!f || !f.name.endsWith('.csv')) return;
+  const reader = new FileReader();
+  reader.onload = ev => loadCSV(ev.target.result);
+  reader.readAsText(f, 'utf-8');
+});
+
+// Dados embutidos (gerados pelo scraper)
+const EMBEDDED_CSV = `dominio,plataforma,nome_loja,whatsapp,telefone,email,instagram,cnpj,razao_social,endereco,cidade,estado,produtos_count,tem_blog,status,data_coleta
+marquinhomotos.com.br,vtex,"Marquinho Motos - Capacete, Moto Peças e Acessórios para Motos e Pilotos!",(11) 2501-0323,(11) 4941-9002,sac@marquinhomotos.com.br,@MARQUINHOMOTOS.COM.BR,35.636.876/0001-03,mação de dados e os pedidos poderão ser cancelados automaticame,roduto adicionado à sacola Subtotal,,MT,,True,ativo,2026-04-02T23:31:42Z
+meninashoes.com.br,shopify,Menina Shoes - Compre as Melhores Marcas e parcele em até 8x,(11) 4380-6061,(11) 4380-6061,sac@meninashoes.com.br,@meninashoes.com.br,11.785.555/0001-02,Whatsa,alçados Bolsas Infantil Acessórios Roupas casa Lançamentos Outlet Aniversário Têni,Itu,SP,,True,ativo,2026-04-02T23:32:46Z
+iorane.com.br,vtex,Iorane | Design e tecidos singulares | Coleções exclusivas,(31) 97219-6604,(31) 2010-4222,shoponline@iorane.com.br,@iorane.com.br,26.051.748/0003-79,Whatsa,alças Saias Shorts Parte única Ver todos Macacões Vestidos Acessórios Ver todos Bo,,MG,,True,ativo,2026-04-02T23:32:31Z
+taco.com.br,shopify,TACO | Loja Oficial | Roupas Masculinas e Femininas,(21) 2585-8678,+55 21 2585-8678,atendimento@taco.com.br,@taco.com.br,02.737.654/0035-77,OFF na prime,alças Jeans Calças Bermudas Shorts Feminino Ver todos Blusas Camisas Regatas Jaque,,RJ,,True,ativo,2026-04-02T23:32:23Z
+genera.com.br,woocommerce,Genera,(11) 5039-9973,(11) 5039-9973,imprensa.dasa@bowler.com.br,@brafrika_viagens,12.841.848/0001-22,entos de promoções WhatsA,"estralidade, Saúde e Bem-Estar Compre Produtos Genera Basic Genera Standard Genera P",,SP,,True,ativo,2026-04-02T23:34:09Z
+decorassentos.com.br,lojaintegrada,Decor Assentos,(41) 99108-1089,(41) 99108-1089,contato@decorassentos.com.br,@decorassentos.com.br,13.029.294/0001-26,Whatsa,ale Conosco Telefone,,PR,,False,ativo,2026-04-02T23:35:31Z
+precopopular.com.br,shopify,Farmácia Online da Preço Popular | É bom poder confiar!,(47) 99202-1687,(47) 9 9202-1687,atendimento@precopopular.com.br,@precopopular.com.br,84.683.481/0012-20,DOS NO SITE SÃO DIFERENTES DOS PREÇOS DAS LOJAS FÍSICAS DE NOSS,aldas Proteção Solar Gripe até 75,,SC,,True,ativo,2026-04-02T23:39:11Z
+drogariacatarinense.com.br,vtex,Drogaria Catarinense | A gente cuida de você,(47) 9202-1687,(47) 9202-1687,atendimento@drogariacatarinense.com.br,@drogariacatarinense.com.br,84.683.481/0012-20,DOS NO SITE SÃO DIFERENTES DOS PREÇOS DAS LOJAS FÍSICAS DE NOSS,aldas Exclusivo Site e App Rotina de Skincare Vitaminas até 55,,SC,,False,ativo,2026-04-02T23:38:57Z
+flaminga.com.br,vtex,Moda Plus Size,(11) 99828-2673,(11) 2548-0034,falecom@flaminga.com.br,@FLAMINGA.COM.BR,16.917.463/0001-52,Indústria e Comércio do Vestuário LTDA,alças Alfaiataria Jeans Leggings Pantacourts Pantalonas Ver tudo Saias Macacão Con,,SP,,False,ativo,2026-04-02T23:38:05Z
+utilplast.com.br,nuvemshop,UP+Casa,(11) 95304-6507,(11) 3087-9292,contato@upmaiscasa.com.br,@upmaiscasa.com.br,43.367.390/0001-45,,ale Conosco UP,,,,False,ativo,2026-04-02T23:39:02Z
+petitejolie.com.br,shopify,Petite Jolie - Loja Oficial,(51) 99113-3009,(51) 9 9113-3009,petitejolie@petitejolie.com.br,@petitejolie.com.br,42.711.955/0003-69,Cadastrar Favoritos Me,AL PETITE JOLIE PARCELE EM ATÉ 6X SEM JUROS FRETE GRÁTIS ACIMA DE R,,RS,,True,ativo,2026-04-02T23:37:07Z
+mash.com.br,shopify,"Mash | Cuecas, Meias, Sungas e Moda Íntima Masculina",(11) 4950-7900,(11) 4950-7900,sac@mash.com.br,@mash.com.br,17.678.232/0001-04,,ale com a gente pelo Whatsapp troca fácil Suas trocas mais simples. Políticas,,SP,,True,ativo,2026-04-02T23:41:20Z
+infostore.com.br,shopify,Info Store | O melhor Mix em tecnologia,(92) 98417-4781,(92) 98417-4781,faleconosco@infostore.com.br,@infostore.com.br,02.337.524/0001-06,h WhatsA,ale com o SAC Favoritos Todos os departamentos Informática Games Notebook TV e Víd,Google,AM,,True,ativo,2026-04-02T23:39:45Z
+dannycosmeticos.com.br,shopify,Danny Cosmeticos,(19) 99648-8165,19 99648 8165,contato@dannycosmeticos.com.br,@dannycosmeticos.com.br,50.028.976/0023-56,idade Troca e Devolução Política de pagame,AVORITOS LOGIN 00 Unhas Descartáveis Luvas Protetor De Bacia Touca,,SP,,True,ativo,2026-04-02T23:39:19Z
+loungerie.com.br,shopify,"Lingeries, Pijamas, Básicos e Rendas | Loungerie",(11) 2388-0454,(11) 2388-0454,atendimento@loungerie.com.br,@loungerie.com.br,13.513.325/0001-10,é possível fazer uma pesquisa,al Shiny Love Sweet Lace Lançamentos Première Wacoal Shiny Love Sweet Lace Ver tod,,SP,,True,ativo,2026-04-02T23:37:27Z
+mascavo.com,vtex,Mascavo,(11) 4858-0229,(11) 4858-0229,sac@mascavo.com,@mascavo.com,,,,,,,False,ativo,2026-04-02T23:40:55Z
+corpoidealsuplementos.com.br,tray,Corpo Ideal Suplementos | O maior site de suplementos do Brasil,(55) 1499-1545,+5514991545080,corpoidealsuplementos@yahoo.com,@corpoideal.brasil,,,,,,,False,ativo,2026-04-02T23:42:00Z
+pluglar.com.br,woocommerce,PlugLar – Aramados,(19) 99623-4303,(19) 3557-4673,contato@pluglar.com.br,@pluglar.com.br,,,,,,,False,ativo,2026-04-02T23:35:46Z
+paraisosaudavel.com.br,tray,Paraíso Saudável,(11) 94567-2622,(11) 94567-2622,atendimento@paraisosaudavel.com.br,@paraisosaudavel.com.br,,,,,,,False,ativo,2026-04-02T23:38:28Z
+lojarafarillo.com.br,shopify,Loja Rafarillo,(16) 99195-5292,(16) 99195-5292,,@rafarillocalçados,10.913.950/0001-60,Whatsa,alta pra garantir seu FRETE GRÁTIS. Compre por numeração. 34 35 36 37 38 39 40 41,Franca,SP,,True,ativo,2026-04-02T23:38:05Z
+swift.com.br,shopify,Swift,(11) 4020-8588,(11) 4020-8588,,,02.914.460/0382-04,Swift A nossa história Encontre Nossa,Alterar região - - - Categorias Veja nossos Produtos Super Kits Combinações exclus,,,,False,ativo,2026-04-02T23:38:17Z
+dumond.com.br,tray,"Dumond | Estilo, Conforto e Qualidade Incomparáveis",,(14) 3623-9995,sac@dumond.com.br,@dumond.com.br,12.882.179/0001-37,alteração sem aviso prévio. Ofertas válidas some,alidade Incomparáveis PRODUTO ADICIONADO NA SACOLA DE COMPRAS Sacola Vazia Subtota,,SE,,False,ativo,2026-04-02T23:36:06Z
+elevelife.com.br,nuvemshop,Eleve Life,,5511910927,atendimento@elevelife.com.br,@elevelife.com.br,31.178.848/0001-39,s de pagamento Me,alm Facial Colágeno Eleve Hair Feminino Eleve Hair Masculino Espuma de Limpeza Gel,,,,False,ativo,2026-04-02T23:37:01Z
+turmatube.com.br,nuvemshop,TurmaTube,,5029391000,sac@turmatube.com.br,@turmatube.com.br,50.293.910/0001-88,,Alimentação Babador Copos Pratos Talheres Brinquedos Enxoval Chupetas Escolar Kits,,RN,,False,ativo,2026-04-02T23:37:05Z
+tokstok.com.br,vtex,Tok&Stok,(11) 4302-5454,(11) 4302-5454,,,49.732.175/0001-82,escritório. Decoração com design e exclusividade a preços acess,al 0 Ofertas para,,,,False,ativo,2026-04-02T23:35:32Z
+ibyte.com.br,vtex,"Eletrônicos, Computadores, Notebooks, Áudio, Vídeo e mais | Ibyte",,(85) 4020-5000,atendimento@ibyte.com.br,@ibyte.com.br,07.272.825/0004-57,nos nas Redes Sociais Formas de Pagame,roduto favoritado. 0 Departamentos Lançamentos New Notebook Caixa de Som Impressora,,,,True,ativo,2026-04-02T23:40:26Z
+compracerta.com.br,shopify,Compra Certa | Tudo o que casa com a sua casa!,(11) 95910-0051,11 95910 0051,,,62.058.318/0007-76,ua reserva pelo consumidor. BUD COMÉRCIO DE ELETRODOMÉSTICOS LTDA.,avoritos Departamentos Seminovos Outlet Geladeiras Lavadoras Fogões Lava louças Mi,,SP,,True,ativo,2026-04-02T23:39:00Z
+keydesign.com.br,shopify,Key Design - Joias e Semijoias Masculinas e Femininas,,(43) 98863-7622,contato@keydesign.com.br,@keydesign.com.br,18.784.958/0001-86,vas Enviar Institucional AJUDA DÚVIDAS ATACADO E LOJAS atendime,altam R,,,,True,ativo,2026-04-02T23:39:42Z
+ddmaquinas.com.br,nuvemshop,"DD Máquinas | Ferramentas, Máquinas e Acessórios Online",,(15) 99107-1209,sacdd@ddmaquinas.com.br,@ddmaquinas.com.br,10.622.178/0001-28,,rodutos com Frete grátis,,SP,,False,ativo,2026-04-02T23:40:49Z
+luckau.com.br,nuvemshop,Luckau,,4217341500,atendimento@luckau.com.br,@luckau.com.br,42.173.415/0001-07,,Avelã Cookies Paçoca Cremosa Doce de Leite Maracujá Caramelo Salgado Frutas Vermel,,SP,,False,ativo,2026-04-02T23:41:35Z
+copafer.com.br,shopify,Garantia de Qualidade em Materiais de Construção | Copafer,(11) 4996-6000,(11) 4996-6000,,,55.728.224/0001-06,gamento Preços e condições de pagame,alidade em Materiais de Construção,,,,True,ativo,2026-04-02T23:41:07Z
+chocolife.com.br,nuvemshop,Chocolife,,74-52566527,sac@chocolife.com.br,@CHOCOLIFE.BR,84.609.053/4979-42,,alguma dúvida. Faça contato com o nosso time de suporte. Frete grátis para todo o,,,,False,ativo,2026-04-02T23:41:31Z
+schumann.com.br,shopify,Schumann: Compre Móveis e Eletros em até 10x Sem Juros,,(49) 99162-9906,cobranca@schumann.com.br,@schumann.com.br,02.158.816/0047-56,s. Ofertas válidas até o término de noss,al Controlador Midi Crossover Direct Box Equalizador Interface de Áudio Monitor de,,SC,,True,ativo,2026-04-02T23:41:03Z
+telhanorte.com.br,shopify,Produtos para a sua Construção ou Reforma em Oferta | Telhanorte,,(11) 3434-3610,telhanorte.canalempresas@saint-gobain.com,@saint,03.840.986/0056-70,Rastrear Compra Canal Empresa,rodutos para a sua Construção ou Reforma em Oferta,Bloco,SP,,True,ativo,2026-04-02T23:40:37Z
+angeloni.com.br,vtex,Angeloni Eletro: As Melhores Marcas em Oferta,(48) 4002-6060,(48) 4002 6060,,,83.646.984/0069-06,eúdos exclusivos do Clube Angeloni. Faça parte FORMAS DE PAGAME,al de Atendimento,,SP,,False,ativo,2026-04-02T23:41:44Z
+sanavita.com.br,vtex,"Sanavita: Suplementos, Nutrientes, Saúde e Bem-Estar",(19) 99990-1197,(19) 99990-1197,,,53.967.360/0001-23,Whatsa,rodutos Conheça as categorias Fitness Ganho de Massa Muscular Performance Esportiva,,SP,,False,ativo,2026-04-02T23:38:14Z
+gorilashield.com.br,lojaintegrada,Gshield,,(00) 0000-0001,nao.responda.acesse.nosso.site.para.abrir.um.atendimento@gorilashield.com.br,@gorilashield.com.br,33.247.450/0001-32,nao.responda.acesse.nosso.site.para.abrir.um.atendime,ale Conosco Telefone,Gshield,SE,,True,ativo,2026-04-02T23:37:59Z
+ninjabrasilstore.com.br,shopify,Loja Oficial SharkNinja BR,,(11) 3003-9030,sac@sharkninjabrasil.com.br,@sharkninjabrasil.com.br,01.490.698/0001-33,edes sociais M Shop Comercial LTDA,al SharkNinja BR Quer ficar por dentro das novidades,,SP,,True,ativo,2026-04-02T23:37:27Z
+outershoes.com.br,vtex,OuterShoes,,21 99134-4984,sac@outershoes.com.br,@outershoes.com.br,12.148.752/0002-64,o Manifesto em imagem Trabalhe conosco Trocas e devoluções Me,alçados casuais e despojados para todas as horas,,RJ,,False,ativo,2026-04-02T23:34:34Z
+colcci.com.br,shopify,Colcci | Loja Oficial | Compre Online,,11 98629 3294,atendimento@colcci.com.br,@colcci.com.br,75.364.570/0007-55,adastro Pedidos Devoluções Nossa,alteração da senha serão enviadas para o seu e-mail Sacola Sacola vazia Não há pro,,SE,,True,ativo,2026-04-02T23:31:50Z
+triton.com.br,shopify,Triton | Loja Oficial | Compre Online,,47 99172 2981,atendimento@triton.com.br,@triton.com.br,75.364.570/0007-55,,rodutos na sua sacola. Que tal conferir algumas categorias,,SC,,True,ativo,2026-04-02T23:31:50Z
+thebar.com,vtex,The-Bar: referência em coquetelaria e autoridade em whisky,,(11) 3336-0611,sac.thebar@fcb.srv.br,@fcb.srv.br,22.648.371/0004-60,dade de produtos no ato da compra. Loja operada pela FULL COMME,alt Whisky Ver todos Marcas Black,,MG,,False,ativo,2026-04-02T23:31:15Z
+darwin6.com.br,shopify,Darwin6,,3831545200,sac@darwin6.com.br,@DARWIN6.COM.BR,38.315.452/0001-35,,ALLMAX ANDROTECH LAB ATD CASTANHA ATLHETICA NUTRITION BLENDER BOTTLE BLESSY BOLD B,,SP,,False,ativo,2026-04-02T23:31:41Z
+orthocrin.com.br,shopify,Orthocrin,,(31) 99802-6629,dpo@orthocrin.com.br,@orthocrin.com.br,17.245.986/0001-62,s. Descubra como nossa,roduto Todos Todos Almofada para Amamentação de Bebês Bibox Cabeceira Cama Box Cama,Fibra,RJ,,False,ativo,2026-04-02T23:31:46Z
+lojadji.com.br,shopify,Loja DJI Brasil: Drones em 12x sem juros + Frete Grátis,(11) 3198-5816,11 3198 5816,,,59.717.553/0001-02,h Whatsa,al 12 meses,,SP,,True,ativo,2026-04-02T23:32:23Z
+lojasrede.com.br,shopify,A maior REDE de cosméticos do Brasil |  Lojas Rede,,(31) 3514-0880,atendimento@lojasrede.com.br,@lojasrede.com.br,05.159.973/0049-36,juda & suporte Fale Conosco Trocas e Devoluções Formas e Pagame,avegando você concorda com a nossa Política de Privacidade. Concordar e fechar Car,,MG,,True,ativo,2026-04-02T23:33:03Z
+lojadccomics.com.br,tray,Loja Oficial DC Comics,,(14) 99845-1022,sac@lojadccomics.com.br,@lojadccomics.com.br,01.424.397/0001-01,utos são desenvolvidos e apresentados por Fan Store Entretenime,al DC Comics Voltar Personagens Voltar Personagens Comics - Batman - Superman - Th,Universo,SP,,True,ativo,2026-04-02T23:42:01Z
+billabong.com.br,shopify,Billabong Brasil | Loja Online Oficial Billabong,,(11)2010-1028,sac@quiksilver.com.br,@Billabong_Brasil,,,,,,,True,ativo,2026-04-02T23:40:07Z
+casatema.com.br,vtex,"Casatema: Móveis Infantis, Juvenis e Montessorianos",(41) 8880-8821,41 8880-8821,,,,,,,,,False,ativo,2026-04-02T23:37:46Z
+rvca.com.br,shopify,RVCA  Brasil | Loja Online Oficial RVCA,,(11)2010-1028,sac@rvca.com.br,@RVCA,,,,,,,True,ativo,2026-04-02T23:38:04Z
+quiksilver.com.br,shopify,Quiksilver Brasil | Loja Online Oficial Quiksilver,,(11) 2010-1029,sac@quiksilver.com.br,@Quiksilver,,,,,,,True,ativo,2026-04-02T23:37:23Z
+duloren.com.br,vtex,Descubra as melhores e mais confortáveis lingeries. Confira! | Duloren Lingerie,,,atendimento@duloren.com.br,@duloren.com.br,04.591.133/0001-30,EMPREENDIMENTOS S/A,Algodão Egípcio Lançamento Compressão Inteligente Sutiãs Calcinhas Modeladores Lin,,RJ,,False,ativo,2026-04-02T23:36:49Z
+mercafe.com.br,vtex,Mercafé,,,atendimento@3coracoes.com.br,@3coracoes.com.br,63.310.411/0030-38,idade Ass,alta este é o café perfeito para quem ama ser intenso. Produtos a partir de R,Guarulhos,SP,,False,ativo,2026-04-02T23:32:45Z
+meuinfinix.com.br,vtex,Infinix Brasil,,,contato@meuinfinix.com.br,@meuinfinix.com.br,81.243.735/0001-48,Política de Privacidade e Cookies Formas de pagame,al Chip - Preto R,,PR,,True,ativo,2026-04-02T23:35:09Z
+lojaspompeia.com,shopify,Lojas Pompéia - A moda é toda sua,,,relacionamento@lojaspompeia.com.br,@lojaspompeia.com.br,87.345.021/0073-00,quanto durarem os estoques. Lins Ferrão Artigos do Vestuário LTDA,ALÇADOS ACESSÓRIOS BELEZA ESPORTIVO CASA OFERTAS Entre no Grupo Vip Pague suas Par,,RS,,True,ativo,2026-04-02T23:31:15Z
+coliseu.com.br,shopify,Coliseu: adquira o que há de melhor na joalheria brasileira!,,,coliseu@coliseu.com.br,@coliseu.com.br,88.936.323/0001-32,u.com.br Conheça a Coliseu Acompanhe a Coliseu Formas de Pagame,alheria brasileira,,,,True,ativo,2026-04-02T23:31:15Z
+epocacosmeticos.com.br,vtex,Época Cosméticos  | Beleza com Frete Grátis em até 10x! | Época Cosméticos,,,comunicacao@news.epocacosmeticos.com.br,@news.epocacosmeticos.com.br.,01.239.313/0004-02,epocacosme,rodutos Auto complete de produtos overlay busca Oie,,MG,,False,ativo,2026-04-02T23:31:15Z
+offpremium.com.br,vtex,OFF PREMIUM,,,atendimento@offpremium.com.br,@offpremium.com.br,09.611.669/0005-18,ociais REDES SOCIAIS Mapa do Site OFFPREMIUM CIDADE MARAVILHOSA,alize seu pedido com rapidez e praticidade 15,,RJ,,False,ativo,2026-04-02T23:35:00Z
+elementbrand.com.br,shopify,Element Brasil | Loja Online Oficial Element,,(11)2010-1028,sac@element.com.br,@Element_br,,,,,,,True,ativo,2026-04-02T23:34:32Z
+choppbrahmaexpress.com.br,shopify,"Barril Chopp, Kit Cerveja, Skol Beats e Mais | Chopp Brahma em Casa",,(11) 5043 3801,atendimento_ze@ambev.com.br,@ambev.com.br,,,,,,,True,ativo,2026-04-02T23:33:18Z
+brastemp.com.br,shopify,Brastemp Oficial - É outro mundo,(11) 98699-3134,11 98699-3134,,,,,,,,,True,ativo,2026-04-02T23:41:42Z
+kipling.com.br,vtex,Kipling | Bolsas e Mochilas,,,atendimento@kipling.com.br,@kipling.com.br,04.411.431/0004-44,se na nossa newsletter Enviar Acompanhe nossas redes sociais COMERCIAL,ALAS ESCOLARES CALÇaDOS FIQUE POR DENTRO,,ES,,True,ativo,2026-04-02T23:41:36Z
+levi.com.br,shopify,Levi's® Brasil Oficial | Jeans e Roupas Originais,,,brasil@levi.com,@levisbrasil,,,,,,,True,ativo,2026-04-02T23:34:16Z
+lojasmel.com,shopify,"lojasmel - Tudo, com amor",,11 91484-1000,,@2014,12.356.100/0039-07,na forma de pagame,rodutos de até 30kg Adicionar ao carrinho páscoa na mel,,SP,,True,ativo,2026-04-02T23:34:12Z
+osklen.com,shopify,,,,2@l.np,@uv,,,,,,,False,ativo,2026-04-02T23:35:19Z
+camisariacolombo.com.br,nuvemshop,Camisaria Colombo,,,contato@camisariacolombo.com.br,@camisariacolombo.com.br,,,,,,,False,ativo,2026-04-02T23:38:39Z
+tena.com.br,shopify,TENA | Líder mundial em produtos para incontinência,,,sac.tena@essity.com,@ESSITY.COM,,,,,,,True,ativo,2026-04-02T23:37:16Z
+eletroshopping.com.br,woocommerce,,,,mg@6.wk,@jI,,,,,,,False,ativo,2026-04-02T23:41:14Z
+drogariaspacheco.com.br,vtex,Farmácia Online - Drogarias Pacheco: Compre Medicamentos e Cosméticos,,112345-6789,,,33.438.250/0187-08,m Facebook Twitter Linkedin Formas de Pagame,avegue pela página Ir direto para o conteúdo Ir direto para a busca Ir direto para,,AC,,True,ativo,2026-04-02T23:40:14Z
+futfanatics.com.br,tray,FutFanatics - A Loja Oficial dos Fanáticos por Futebol,,(11) 4858-3500,,,05.328.923/0001-90,a Fut Ajuda Trocas e Devolução Política de Privacidade Regulame,al dos Fanáticos por Futebol FutFanatics Veja as ofertas no APP Abrir Troque Fut F,,RJ,,False,ativo,2026-04-02T23:40:06Z
+dermage.com.br,vtex,Dermage,,(21)3865-0418,,,31.575.186/0032-37,MA MENSA,alcular Adicionar Subtotal,,ES,,True,ativo,2026-04-02T23:41:18Z
+drogariasaopaulo.com.br,vtex,Drogaria São Paulo - Farmácia online,,112345-6789,,,61.412.110/0565-33,book Twitter Linkedin Formas de Pagamento PIX MasterCard VISA,avegue pela página Ir direto para o conteúdo Ir direto para a busca Ir direto para,,AC,,True,ativo,2026-04-02T23:39:01Z
+animale.com.br,vtex,ANIMALE | Moda que exalta a potência feminina,,21 3733-7702,,,09.611.669/0005-18,CERTIFICADOS ANIMALE CIDADE MARAVILHOSA INDUSTRIA E COME,alta a potência feminina Menu Compre pelo WhatsApp Encontre uma Loja Novidades ANI,,SE,,False,ativo,2026-04-02T23:32:57Z
+supernosso.com.br,shopify,Supernosso supermercado em Belo Horizonte: o melhor preço,,(31) 3369-4550,,,10.319.375/0001-72,a venda e o consumo de bebidas alcoólicas são proibidos para me,"Aves, Carnes e Peixes Bebidas Alcóolicas Bebidas não Alcóolicas Congelados e Resfr",,,,True,ativo,2026-04-02T23:33:08Z
+novomundo.com.br,shopify,Novo Mundo: As Melhores Ofertas Estão Aqui,,(62) 3501-1000,,,01.534.080/0001-28,no mome,Alterar 0 DEPARTAMENTOS Menu BLACK FRIDAY Black Friday Todas Ofertas Eletrodomésti,,GO,,True,ativo,2026-04-02T23:33:44Z
+autoz.com.br,vtex,"Auto Z Soluções Automotivas - Pneus, Peças e Acessórios",,(19) 4090 1665,,,45.987.005/0169-49,uma empresa,"avoritos Meus Boletos Bem-vindo Entrar na sua conta para ver suas compras, favorit",,SP,,True,ativo,2026-04-02T23:31:54Z
+loja.meupositivo.com.br,vtex,Loja Meu Positivo,,7908068804,,,81.243.735/0001-48,Taxas do provedor de internet podem ser aplicadas. Loja Me,Avulsas Área Restrita Descubra Garantia Manuais Drivers Empresas Meu carrinho Seu,Curitiba,PR,,False,ativo,2026-04-02T23:34:40Z
+e-lens.com.br,shopify,"Lentes de contato com grau, coloridas e soluções - E-lens",,(19) 99708-2226,,,13.257.648/0001-90,Todos os direitos reservados SGH BRASIL COMÉRCIO DE ÓCULOS LTDA,avegue por necessidade Soluções Miopia e Hipermetropia Astigmatismo MAIS VENDIDAS,,SE,,True,ativo,2026-04-02T23:32:24Z
+eotica.com.br,shopify,"Ótica Online no Brasil: Lentes de Contato, Óculos de Sol e Grau - eÓtica",,(19) 99879-6454,,,13.257.648/0001-90,SGH BRASIL COMÉRCIO DE ÓCULOS LTDA,AL I cupom,,SE,,True,ativo,2026-04-02T23:31:15Z
+trussardi.com.br,vtex,"Trussardi Loja Oficial | Luxo e Elegância em Cama, Banho, Loungewear e Beachwear",,,,@trussardioficial,82.640.558/0001-04,Facebook Instagram YouTube Atendime,al 300 fios Bambu Rondini R,,SC,,False,ativo,2026-04-02T23:36:35Z
+divvino.com.br,vtex,"Divvino: sua loja online de vinhos, espumantes e bebidas",,(48) 4020 2004,,,83.646.984/0069-06,gamento. Pagame,"rodutos QUERO SER SÓCIO Entre ou 
+crie uma conta Meu carrinho Clube D Vinhos Vinhos",,SE,,True,ativo,2026-04-02T23:36:28Z
+usebeauty.com.br,nuvemshop,Beauty Store,,3609189000,,,36.091.890/0001-31,,alguns dias,,,,False,ativo,2026-04-02T23:37:13Z
+lelis.com.br,shopify,LE LIS | Loja Online,,,,@lelisblanc,49.669.856/0001-43,promoções e disponibilidade de estoque a qualquer mome,ALFAIATARIA CONFIRA,,SP,,True,ativo,2026-04-02T23:35:54Z
+lojakings.com.br,nuvemshop,,,,,@X,,,,,,,False,ativo,2026-04-02T23:31:15Z
+baggiocafe.com.br,shopify,,,,,@y,,,,,,,False,ativo,2026-04-02T23:41:18Z
+mrcat.com.br,vtex,,,,,@ޝ7,,,,,,,False,ativo,2026-04-02T23:41:41Z
+justapprove.com.br,nuvemshop,Approve,,,,,55.380.250/0002-77,a de Privacidade Política de Entrega e Frete Política de Pagame,alças Jaquetas e Corta Ventos Camisas e Regatas Croppeds e Tops Shorts e Saias Ace,,,,False,ativo,2026-04-02T23:41:05Z
+aramis.com.br,vtex,,,,,@U,,,,,,,False,ativo,2026-04-02T23:40:58Z
+estoque.com.br,shopify,"Estoque | Outlet Oficial da John John, Dudalina e outras",,,,,49.669.856/0001-43,Horário de Atendime,"al da John John, Dudalina e outras Outlet Oficial da John John, Dudalina e outras",,SP,,True,ativo,2026-04-02T23:40:47Z
+multilaser.com.br,shopify,Multi - Multilaser agora é Multi,,,,,59.717.553/0001-02,lítica Troca e Devolução Política de Proteção de Dados Regulame,al Brinquedos Bebês conforto Liquidificadores Smartwatch Ventiladores Confira as m,,SP,,True,ativo,2026-04-02T23:40:15Z
+samsonite.com.br,shopify,,,,,@j,,,,,,,False,ativo,2026-04-02T23:40:58Z
+patpat.com,shopify,,,,,@鸉,,,,,,,False,ativo,2026-04-02T23:40:29Z
+vestcasa.com.br,woocommerce,,,,,@u,,,,,,,False,ativo,2026-04-02T23:39:56Z
+amendoasconfeitadas.com.br,woocommerce,,,,,@Y,,,,,,,False,ativo,2026-04-02T23:39:59Z
+marcyn.com.br,vtex,,,,,@r,,,,,,,False,ativo,2026-04-02T23:39:31Z
+vhita.com.br,shopify,,,,,@H,,,,,,,False,ativo,2026-04-02T23:39:23Z
+farmrio.com.br,shopify,,,,,@Z,,,,,,,False,ativo,2026-04-02T23:40:10Z
+pulsesound.com.br,shopify,Pulse Sound,,,,,59.717.553/0001-02,orte e Reparo Acompanhar entrega Políticas Redes Sociais Pagame,rodutos Frete grátis Produtos com selo,,SP,,True,ativo,2026-04-02T23:39:46Z
+carrefour.com.br,vtex,Carrefour: As melhores promoÃ§Ãµes para vocÃª economizar,,,,,45.543.915/0846-95,rio Formas de Pagame,rodutos ou marcas no Carrefour Para acompanhar seus pedidos e benefÃ,,SP,,False,ativo,2026-04-02T23:40:33Z
+usereserva.com,vtex,Reserva | Moda Masculina Autêntica e Estilo Brasileiro,,,,,16.590.234/0064-50,dos Minha Carteira Me,rodutos sem descontos. Troca Facilitada Compre no site ou app e troque em uma das l,,RJ,,True,ativo,2026-04-02T23:38:02Z
+probel.com.br,shopify,Probel Colchões  -  Sempre a sua melhor escolha,,,,,04.419.279/0001-01,fotos são merame,al Mola Ensacada Probel Excede Premium,,,,True,ativo,2026-04-02T23:38:00Z
+fastshop.com.br,vtex,,,,,@a4,,,,,,,False,ativo,2026-04-02T23:35:04Z
+casaevideo.com.br,vtex,,,,,@M,,,,,,,False,ativo,2026-04-02T23:36:58Z
+osklen.com.br,shopify,,,,,@.,,,,,,,False,ativo,2026-04-02T23:36:54Z
+reebok.com.br,vtex,,,,,@b,,,,,,,False,ativo,2026-04-02T23:37:20Z
+havaianas.com.br,shopify,,,,,@U,,,,,,,False,ativo,2026-04-02T23:36:27Z
+motorola.com.br,vtex,"Celulares com 128GB, 256GB, 512GB e 1TB | Motorola Oficial",,,,,01.472.720/0003-84,LLC. Todos os direitos reservados. O nome,al 0 Cadastre-se e ganhe até R,,SP,,True,ativo,2026-04-02T23:36:08Z
+technos.com.br,vtex,,,,,@i,,,,,,,False,ativo,2026-04-02T23:36:21Z
+plie.com.br,shopify,Plié,,,,,35.473.287/0017-19,m Revendedor Sobre a Plié Plié Med Contato Ajuda Nossa,rodutos LINHA Ver Tudo Calcinhas Sutiãs e Tops Modeladores Bermudas e Shorts Fitnes,,SP,,False,ativo,2026-04-02T23:40:37Z
+duxnutrition.com,shopify,DUX Human Health: Suplementos para sua Saúde e Performance,,,,,31.112.243/0001-45,uda Formas de pagamento Acompanhar pedido Whatsa,rodutos em nosso site oficial . Confira nossos parceiros oficiais,,SP,,True,ativo,2026-04-02T23:40:28Z
+newbalance.com.br,vtex,"Site Oficial New Balance: lançamentos, edições exclusivas e mais",,,,,45.075.049/0001-41,treino e lifestyle. Roupas e acess,al New Balance,,SP,,False,ativo,2026-04-02T23:39:42Z
+artwalk.com.br,shopify,"Artwalk | Tênis, Sneakers, Roupas e Lifestyle",,,,,05.555.599/0002-65,CONFECÇÕES CALÇADOS LTDA,"alk Para ter uma melhor experiência de compra, insira seu CEP e veja a seleção de",,SP,,True,ativo,2026-04-02T23:39:15Z
+amobeleza.com.br,shopify,,,,,@DĬ,,,,,,,False,ativo,2026-04-02T23:38:50Z
+cantao.com.br,vtex,Cantão: Site Oficial,,,,,12.093.445/0002-23,om outras promoções e produtos com preço demarcado. Válido some,al DELÍRIO outono vestidos produtos bazar Entrar app_notifications Atendimento Ate,,,,False,ativo,2026-04-02T23:35:00Z
+mercado.carrefour.com.br,vtex,Mercado Carrefour | Ofertas de Supermercado Delivery,,,,,45.543.915/0846-95,rio Formas de Pagame,rodutos ou marcas no Carrefour Para acompanhar seus pedidos e benefÃ,,SP,,True,ativo,2026-04-02T23:35:23Z
+clovis.com.br,shopify,,,,,@O,,,,,,,False,ativo,2026-04-02T23:35:02Z
+superbom.com.br,woocommerce,,,,,@u,,,,,,,False,ativo,2026-04-02T23:31:58Z
+fossil.com.br,vtex,,,,,@4,,,,,,,False,ativo,2026-04-02T23:32:36Z
+tracta.com.br,woocommerce,,,,,@g,,,,,,,False,ativo,2026-04-02T23:32:38Z
+redley.com.br,vtex,Redley - Site Oficial,,,,,12.093.445/0002-23,mas de pagame,al Cadastre-se e ganhe 15,,,,False,ativo,2026-04-02T23:32:56Z
+paquetaesportes.com.br,vtex,,,,,@JR,,,,,,,False,ativo,2026-04-02T23:33:15Z
+loja.imaginarium.com.br,shopify,Imaginarium | Presentes criativos e muita variedade,,,,,00.399.603/0010-07,valor válido é o do Carrinho de Compras. SELOS FORMAS DE PAGAME,altam R,,SE,,True,ativo,2026-04-02T23:32:16Z
+bobo.com.br,shopify,BO.BÔ | Loja Online Oficial,,,,,49.669.856/0001-43,oque a qualquer mome,al COMPRE E RETIRE EM LOJA NO MESMO DIA,,SP,,True,ativo,2026-04-02T23:33:39Z
+kitchenaid.com.br,shopify,Loja KitchenAid - A Loja Oficial da KitchenAid no Brasil,,,,,62.058.318/0007-76,Revendedor Como comprar Ass,al da KitchenAid no Brasil Atendimento Acompanhar Pedido Minha Conta OFERTAS Bated,,SP,,True,ativo,2026-04-02T23:33:25Z
+prontolight.com,woocommerce,,,,,@IeE,,,,,,,False,ativo,2026-04-02T23:34:16Z
+shopinfo.com.br,vtex,,,,,@Ѻ,,,,,,,False,ativo,2026-04-02T23:34:27Z
+fila.com.br,shopify,,,,,@e,,,,,,,False,ativo,2026-04-02T23:34:43Z
+lebiscuit.com.br,vtex,,,,,@W,,,,,,,False,ativo,2026-04-02T23:31:15Z
+montecarlo.com.br,vtex,,,,,@e2z,,,,,,,False,ativo,2026-04-02T23:31:54Z
+lojaspaqueta.com.br,vtex,,,,,@m,,,,,,,False,ativo,2026-04-02T23:31:41Z
+babadotop.com.br,vtex,Moda Feminina - Novidades e Tendências | Babadotop,,,,,17.852.759/0001-03,de comunicação e sites de buscas. BABADOSHOP COME,AVA PEQUIÁ Farm Babado Babado Fitness Babado Beach Lança Perfume Animale Colcci Co,Barueri,SP,,True,ativo,2026-04-02T23:31:53Z
+abracasa.com.br,vtex,,,,,@yC,,,,,,,False,ativo,2026-04-02T23:35:06Z
+reserva.ink,woocommerce,Reserva Ink,,,,,16.590.234/0064-50,planos Somos o me,alizadas com o Plano Gratuito Ir para o conteúdo Planos e preços Produtos Aprenda,,,,False,ativo,2026-04-02T23:31:40Z
+vincishoes.com.br,shopify,,,,,@r,,,,,,,False,ativo,2026-04-02T23:31:22Z
+eurorelogios.com.br,vtex,,,,,@u,,,,,,,False,ativo,2026-04-02T23:31:15Z
+abracadabra.com.br,vtex,,,,,@n,,,,,,,False,ativo,2026-04-02T23:31:15Z
+lego.com.br,shopify,Loja Oficial LEGO® BR,,,,,01.490.698/0001-33,Shop Comercial LTDA,al LEGO,Ferrari,AM,,True,ativo,2026-04-02T23:38:33Z
+ankeroficial.com.br,woocommerce,,,,,@hS,,,,,,,False,ativo,2026-04-02T23:37:30Z
+cobasi.com.br,vtex,Cobasi,,,,,53.153.938/0016-94,EGURA. A Cobasi garante segurança para suas informações pess,rodutos exclusivos Amigo Cobasi Pontue e economize Compra Programada Programe e eco,,SP,,False,ativo,2026-04-02T23:38:02Z
+pandora.com.br,woocommerce,,,,,@c,,,,,,,False,ativo,2026-04-02T23:37:20Z
+hipervarejo.com.br,vtex,,,,,@Û,,,,,,,False,ativo,2026-04-02T23:38:12Z
+sorteonline.com.br,vtex,,,,,@D,,,,,,,False,ativo,2026-04-02T23:38:32Z
+mariafilo.com.br,vtex,Maria Filó,,,,,09.611.669/0005-18,OJAS Confira nossos endereços REDES SOCIAIS Formas de pagame,Alto Inverno 26 Inverno 26 Ver tudo Roupas Ver tudo Partes de cima Blusas Regatas,,RJ,,False,ativo,2026-04-02T23:38:45Z
+blackskullusa.com.br,shopify,BLACK SKULL USA™ Heavy Sports Nutrition | Suplemento alimentar,,,,,19.897.687/0001-38,Hora de se juntar ao time,avy Sports Nutrition,,SP,,True,ativo,2026-04-02T23:38:40Z
+oscarcalcados.com.br,vtex,,,,,@B,,,,,,,False,ativo,2026-04-02T23:36:48Z
+authenticfeet.com.br,shopify,"Authentic Feet | Tênis, Roupas e Acessórios",,,,,05.055.599/0025-51,pagame,rodutos Exclusivos Feminino Novidades Tênis Roupas Chinelos e sandálias Acessórios,,SP,,True,ativo,2026-04-02T23:36:53Z
+positivocasainteligente.com.br,vtex,,,,,@4,,,,,,,False,ativo,2026-04-02T23:35:35Z
+dakota.com.br,vtex,Loja Oficial Dakota: calçados femininos com frete grátis,,(54) 3281-8070,,,,,,,,,True,ativo,2026-04-02T23:35:38Z
+loja.singer.com.br,shopify,"Máquina de Costura Doméstica, Industrial e Acessórios Singer",,,,,61.432.506/0001-64,SINGER do BRASIL IND. COM. LTDA.,al e Acessórios Singer Aproveite as promoções exclusivas do site Singer saiba mais,,SP,,True,ativo,2026-04-02T23:41:37Z
+morana.com.br,vtex,,,,,@H,,,,,,,False,ativo,2026-04-02T23:41:39Z
+magicfeet.com.br,shopify,magicfeet | Estilo para acompanhar suas descobertas!,,,,,05.055.599/0027-13,dados formas de pagame,avoritos Tênis Nike Dunk Low GS Infantil nike air force Tênis Nike Air Force 1 BG,,SP,,True,ativo,2026-04-02T23:40:57Z
+afabula.com.br,vtex,Fábula | Roupas Infantis Feitas para Brincar!,,,,,09.611.669/0005-18,FÁBULA CIDADE MARAVILHOSA INDUSTRIA E COMERCIO DE ROUPAS SA.,alça Novidades,,RJ,,True,ativo,2026-04-02T23:40:20Z
+ateen.com.br,vtex,"Ateen - Boho Chic, Versátil e Atemporal",,,,,20.088.729/0001-79,reios Formas de Pagamento Parcelame,al FRETE GRÁTIS EM COMPRAS ACIMA DE R,,RJ,,False,ativo,2026-04-02T23:39:06Z
+hostinger.com,woocommerce,,,,,@³sòÿï,,,,,,,False,ativo,2026-04-02T23:39:21Z
+umbro.com.br,shopify,"Moda casual, roupas e calçados esportivos com conforto | Umbro",,,,,81.786.121/0001-02,trocas e Devoluções Regulame,"al, roupas e calçados esportivos com conforto",,SE,,True,ativo,2026-04-02T23:38:50Z
+brae.com.br,shopify,,,,,,,,,,,,False,erro,2026-04-02T23:34:53Z
+brinox.com.br,vtex,Brinox Ofertas Hoje,,,,,,,,,,,False,ativo,2026-04-02T23:33:56Z
+britaniaemcasa.com.br,vtex,Eletroclub,,,,,,,,,,,False,ativo,2026-04-02T23:33:51Z
+vapza.com.br,shopify,Para sua casa - Vapza - Vapza :: Alimentos Embalados a Vácuo!,,,,,,,,,,,True,ativo,2026-04-02T23:33:48Z
+hering.com.br,shopify,,,,,,,,,,,,False,ativo,2026-04-02T23:33:48Z
+brandili.com.br,vtex,Brandili,,,,,,,,,,,False,ativo,2026-04-02T23:33:15Z
+bemol.com.br,vtex,Bemol | Escolha com Confiança!,,,,,,,,,,,False,ativo,2026-04-02T23:34:03Z
+shopdoscabelos.com.br,shopify,Shop dos cabelos,,,,,,,,,,,True,ativo,2026-04-02T23:33:48Z
+farmaciaindiana.com.br,shopify,Farmácia Indiana | Cuidar de você é o nosso propósito!,,,,,,,,,,,True,ativo,2026-04-02T23:33:59Z
+underarmour.com.br,vtex,,,,,,,,,,,,False,erro,2026-04-02T23:32:43Z
+zinco.com.br,shopify,Moda Jovem Feminina E Mais Pague Com Pix E Ganhe 5% Off  | Zinco,,,,,,,,,,,True,ativo,2026-04-02T23:31:38Z
+hopelingerie.com.br,shopify,"HOPE Lingerie: Sutiãs, Calcinhas, Pijamas e mais!",,,,,,,,,,,True,ativo,2026-04-02T23:31:49Z
+mobonline.com.br,shopify,ORIENTE | Inverno 26 MOB Moda premium feminina,,,,,,,,,,,True,ativo,2026-04-02T23:32:02Z
+philco.com.br,shopify,"Loja Oficial Philco - Eletrodomésticos, Acessórios e Eletroportáteis",,,,,,,,,,,True,ativo,2026-04-02T23:31:45Z
+bibi.com,shopify,"Calçados Bibi | Fazer o bem, um passinho por vez",,,,,,,,,,,True,ativo,2026-04-02T23:32:02Z
+electrolux.com.br,vtex,Electrolux | Loja Oficial com os melhores eletrodomésticos do mercado,,,,,,,,,,,False,ativo,2026-04-02T23:32:50Z
+loja.panasonic.com.br,shopify,Loja Online Panasonic - Todos os produtos Panasonic em um só lugar,,,,,,,,,,,True,ativo,2026-04-02T23:32:44Z
+puket.com.br,shopify,"Puket | Pijamas, Meias e Mochilas: Cashback e 3% OFF no PIX",,,,,,,,,,,True,ativo,2026-04-02T23:32:35Z
+shopclub.com.br,vtex,Shopclub: Outlet Eletrodomésticos da Electrolux e Continental,,,,,,,,,,,False,ativo,2026-04-02T23:33:02Z
+americanas.com.br,vtex,Páscoa 2026 na Americanas: Não deixe para última hora,,,,,,,,,,,False,ativo,2026-04-02T23:32:59Z
+heringkids.com.br,shopify,Moda Infantil Hering Kids: Roupas para Meninos e Meninas,,,,,,,,,,,False,ativo,2026-04-02T23:33:15Z
+outletespacociahering.com.br,vtex,"Roupas femininas, masculinas e infantis em oferta",,,,,,,,,,,False,ativo,2026-04-02T23:31:15Z
+vivara.com.br,vtex,"Joias, Anéis, Alianças e Relógios | Vivara Oficial",,,,,,,,,,,False,ativo,2026-04-02T23:33:16Z
+lojaprojetoverao.com.br,vtex,,,,,,,,,,,,False,ativo,2026-04-02T23:33:21Z
+soulier.com.br,shopify,"Soulier | Sandálias, Bolsas, Sapatos, Acessórios e Mais.",,,,,,,,,,,True,ativo,2026-04-02T23:33:10Z
+casabaher.com,woocommerce,,,,,,,,,,,,False,erro,2026-04-02T23:35:36Z
+britania.com.br,shopify,Loja Oficial Britânia - Eletrodomésticos e Utensílios para Casa,,,,,,,,,,,True,ativo,2026-04-02T23:34:50Z
+lancaperfume.com.br,shopify,Lança Perfume: seu próximo look está aqui,,,,,,,,,,,True,ativo,2026-04-02T23:34:13Z
+penalty.com.br,shopify,"Esporte, Lançamentos e Ofertas Exclusivas | Penalty",,,,,,,,,,,True,ativo,2026-04-02T23:34:18Z
+dudalina.com.br,vtex,Dudalina,,,,,,,,,,,False,ativo,2026-04-02T23:37:24Z
+midea.com.br,vtex,Loja Online Oficial | Compre direto da Fábrica - Midea,,,,,,,,,,,False,ativo,2026-04-02T23:35:18Z
+arno.com.br,vtex,"Loja Oficial Arno | Eletroportáteis, Panelas, Utensílios e muito mais para o seu lar",,,,,,,,,,,True,ativo,2026-04-02T23:37:51Z
+puc.com.br,shopify,Moda Infantil Hering Kids: Roupas para Meninos e Meninas,,,,,,,,,,,False,ativo,2026-04-02T23:37:37Z
+shoptime.com.br,vtex,Páscoa 2026 na Americanas: Não deixe para última hora,,,,,,,,,,,False,ativo,2026-04-02T23:35:19Z
+lupo.com.br,shopify,"Lupo Oficial: Roupas Esportivas, Moda Íntima Feminina e Masculina",,,,,,,,,,,True,ativo,2026-04-02T23:36:12Z
+loja.karcher.com.br,shopify,Loja Oficial Kärcher,,,,,,,,,,,True,ativo,2026-04-02T23:36:12Z
+clicksophia.com.br,woocommerce,,,,,,,,,,,,False,ativo,2026-04-02T23:35:42Z
+natue.com.br,vtex,Mundo Verde - A maior rede de produtos saudáveis do Brasil,,,,,,,,,,,False,ativo,2026-04-02T23:34:32Z
+mundoverde.com.br,shopify,Mundo Verde - A maior rede de produtos saudáveis do Brasil,,,,,,,,,,,True,ativo,2026-04-02T23:36:12Z
+polowear.com.br,vtex,,,,,,,,,,,,False,erro,2026-04-02T23:37:48Z
+dzarm.com.br,vtex,"DZARM | Moda Versátil, Cool e Atemporal | Roupas, Jeans, Tendências",,,,,,,,,,,False,ativo,2026-04-02T23:38:07Z
+morenarosa.com.br,vtex,Morena Rosa: a marca de roupa feminina da brasileira,,,,,,,,,,,False,ativo,2026-04-02T23:38:57Z
+iodice.com.br,vtex,Iódice: Sua Marca de Moda Feminina e Masculina,,,,,,,,,,,False,ativo,2026-04-02T23:38:29Z
+malwee.com.br,vtex,"Malwee: Moda feminina, masculina, plus size e Moda infantil",,,,,,,,,,,True,ativo,2026-04-02T23:38:12Z
+mahogany.com.br,shopify,"Mahogany - Perfumaria e Cosméticos com Qualidade, Autenticidade e Exuberância",,,,,,,,,,,True,ativo,2026-04-02T23:39:40Z
+paguemenos.com.br,vtex,Pague Menos | Medicamentos e Manipulação,,,,,,,,,,,False,ativo,2026-04-02T23:39:15Z
+bonprix.com.br,shopify,Bonprix | Moda Feminina - Compre Online,,,,,,,,,,,False,ativo,2026-04-02T23:39:24Z
+rihappy.com.br,shopify,"Ri Happy Brinquedos - Quanto mais Brincadeira, Melhor!",,,,,,,,,,,True,ativo,2026-04-02T23:39:23Z
+submarino.com.br,vtex,Páscoa 2026 na Americanas: Não deixe para última hora,,,,,,,,,,,False,ativo,2026-04-02T23:39:36Z
+br.vaio.com,shopify,VAIO – Site Oficial da VAIO Brasil,,,,,,,,,,,True,ativo,2026-04-02T23:39:53Z
+trocafone.com,vtex,Trocafone | Celulares Seminovos e Usados com Garantia,,,,,,,,,,,False,ativo,2026-04-02T23:39:59Z
+consul.com.br,vtex,Loja Consul - Eletrodomésticos para Sua Casa,,,,,,,,,,,False,ativo,2026-04-02T23:40:49Z
+phooto.com.br,woocommerce,Phooto Brasil,,,,,,,,,,,False,ativo,2026-04-02T23:40:28Z
+oceane.com.br,vtex,"Océane: maquiagem, skincare, cabelo e mais | Site Oficial",,,,,,,,,,,False,ativo,2026-04-02T23:41:43Z
+karsten.com.br,shopify,"Karsten | Tudo em cama, mesa, banho e decoração",,,,,,,,,,,True,ativo,2026-04-02T23:41:24Z
+leboh.com.br,shopify,lbh x zin,,,,,,,,,,,False,ativo,2026-04-02T23:41:56Z
+obabox.com.br,shopify,Obabox,,,,,,,,,,,True,ativo,2026-04-02T23:41:31Z
+`;
+
+loadCSV(EMBEDDED_CSV);
+</script>
+</body>
+</html>

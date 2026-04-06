@@ -1,0 +1,17 @@
+# Ambiente
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Outputs gerados
+*.csv
+dominios.txt
+teste_dominios.txt
+
+# IDE
+.vscode/
+.idea/
