@@ -27,13 +27,23 @@ CC_INDEXES = [
 
 WAYBACK_CDX = "http://web.archive.org/cdx/search/cdx"
 
-# Padrões de URL que indicam Shopify
+# Padrões de URL que indicam e-commerce BR (Shopify + outras plataformas)
 SHOPIFY_URL_PATTERNS = [
+    # Shopify
     "*.com.br/cdn/shop/*",
     "*.com.br/collections/*",
     "*.com.br/products/*",
     "*.com.br/cart",
     "*.com.br/account/login",
+    # Nuvemshop / Tiendanube
+    "*.com.br/sacola",
+    "*.com.br/checkout/v3/*",
+    # Tray
+    "*.com.br/loja/*",
+    # Genérico e-commerce BR
+    "*.com.br/carrinho",
+    "*.com.br/finalizar-compra",
+    "*.com.br/minha-conta",
 ]
 
 

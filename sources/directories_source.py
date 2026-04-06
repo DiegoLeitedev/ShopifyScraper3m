@@ -30,6 +30,7 @@ def fetch_domains() -> list[str]:
         ("Pelando",    _pelando),
         ("Cuponomia",  _cuponomia),
         ("Afilio",     _afilio),
+        ("Lomadee",    _lomadee),
         ("Seeds BR",   _seeds),
     ]
 
@@ -190,6 +191,51 @@ def _afilio() -> list[str]:
     return list(domains)
 
 
+# ── Lomadee — rede de afiliados com 500+ lojas BR ────────────────────────────
+
+def _lomadee() -> list[str]:
+    """Extrai lojas da rede de afiliados Lomadee (Buscapé group)."""
+    html = get_with_playwright(
+        "https://www.lomadee.com/lojas/",
+        "a[href*='.com.br']",
+    )
+    if not html:
+        return []
+
+    soup = BeautifulSoup(html, "lxml")
+    domains = set()
+
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if href.startswith("http") and "lomadee" not in href and ".com.br" in href:
+            d = normalize_domain(href)
+            if d.endswith(".com.br") and "." in d:
+                domains.add(d)
+
+    # Tentar __NEXT_DATA__ também
+    ndata = soup.find("script", id="__NEXT_DATA__")
+    if ndata:
+        try:
+            data = json.loads(ndata.string)
+            def _walk(obj):
+                if isinstance(obj, dict):
+                    for k, v in obj.items():
+                        if k in ("url", "website", "domain", "storeUrl") and isinstance(v, str):
+                            d = normalize_domain(v)
+                            if d.endswith(".com.br"):
+                                domains.add(d)
+                        else:
+                            _walk(v)
+                elif isinstance(obj, list):
+                    for item in obj:
+                        _walk(item)
+            _walk(data)
+        except Exception:
+            pass
+
+    return list(domains)
+
+
 # ── Seeds estáticos — lojas Shopify BR conhecidas ────────────────────────────
 
 def _seeds() -> list[str]:
@@ -198,73 +244,173 @@ def _seeds() -> list[str]:
     O fingerprint (Fonte C) confirma quais ainda estão ativas.
     """
     return [
-        # Moda / Vestuário
+        # ── Moda / Vestuário (grandes) ─────────────────────────────────────────
         "www.tanlup.com.br",
         "www.reserva.ink",
         "www.toulon.com.br",
-        "www.brooksbrothers.com.br",
         "www.timberland.com.br",
         "www.lacoste.com.br",
         "www.quiksilver.com.br",
-        "www.theus.com.br",
         "www.tng.com.br",
         "www.redley.com.br",
         "www.foxton.com.br",
         "www.ellus.com.br",
-        "www.fivebyfive.com.br",
         "www.colcci.com.br",
         "www.oqvestir.com.br",
         "www.morena-rosa.com.br",
         "www.triton.com.br",
         "www.vix.com.br",
-        "www.oasis.com.br",
-        # Calçados
+        # ── Moda / Vestuário (médias — mais WhatsApp) ─────────────────────────
+        "www.dafiti.com.br",
+        "www.youcom.com.br",
+        "www.shoulder.com.br",
+        "www.animale.com.br",
+        "www.farm-rio.com",
+        "www.mixed.com.br",
+        "www.amaro.com",
+        "www.zattini.com.br",
+        "www.cea.com.br",
+        "www.hering.com.br",
+        "www.bobstore.com.br",
+        "www.cantaograma.com.br",
+        "www.dudalina.com.br",
+        "www.zinzane.com.br",
+        "www.iodice.com.br",
+        "www.lolitta.com.br",
+        "www.alba-rosa.com.br",
+        "www.shop2gether.com.br",
+        "www.gallerist.com.br",
+        "www.haight.com.br",
+        "www.insecta.shoes",
+        "www.ahlens.com.br",
+        "www.haveaianas.com.br",
+        "www.goexplore.com.br",
+        # ── Calçados ───────────────────────────────────────────────────────────
         "www.dmstore.com.br",
         "www.vans.com.br",
-        "www.thrasherstore.com.br",
         "www.birkenstock.com.br",
         "www.osklen.com.br",
         "www.cariuma.com.br",
-        # Beleza / Cosméticos
+        "www.vizzano.com.br",
+        "www.piccadilly.com.br",
+        "www.usaflex.com.br",
+        "www.democrata.com.br",
+        "www.beira-rio.com.br",
+        "www.moleca.com.br",
+        "www.crocs.com.br",
+        # ── Beleza / Cosméticos ────────────────────────────────────────────────
         "www.onofre.com.br",
-        "www.bioage.com.br",
         "www.nativaspa.com.br",
         "www.vult.com.br",
-        "www.colorama.com.br",
         "www.tracta.com.br",
         "www.usebeauty.com.br",
-        # Casa / Decoração
+        "www.quem-disse-berenice.com.br",
+        "www.souvie.com.br",
+        "www.usecantu.com.br",
+        "www.eudora.com.br",
+        "www.o-boticario.com.br",
+        "www.avon.com.br",
+        "www.granado.com.br",
+        "www.davines.com.br",
+        "www.depil-ok.com.br",
+        "www.lojamagia.com.br",
+        "www.beautybox.com.br",
+        "www.mercadinha-dri.com.br",
+        # ── Casa / Decoração ───────────────────────────────────────────────────
         "www.etna.com.br",
-        "www.doural.com.br",
-        "www.tok-stok.com.br",
         "www.area-h.com.br",
         "www.camicado.com.br",
         "www.actualdesign.com.br",
-        # Eletrônicos / Tech
-        "www.b2w.io",
+        "www.westwing.com.br",
+        "www.mobly.com.br",
+        "www.leroy-merlin.com.br",
+        "www.telhanorte.com.br",
+        "www.dicasa.com.br",
+        "www.tok-stok.com.br",
+        "www.etna.com.br",
+        "www.betel.com.br",
+        "www.decostore.com.br",
+        "www.arquiteturaeinteriores.com.br",
+        # ── Eletrônicos / Tech ─────────────────────────────────────────────────
         "www.supernosso.com.br",
         "www.shopclub.com.br",
-        # Esportes
+        "www.kabum.com.br",
+        "www.terabyteshop.com.br",
+        "www.pichau.com.br",
+        "www.gkinformatica.com.br",
+        # ── Esportes / Outdoor ─────────────────────────────────────────────────
         "www.descente.com.br",
         "www.olympikus.com.br",
         "www.penalty.com.br",
-        "www.topper.com.br",
         "www.insports.com.br",
-        # Acessórios / Joias
+        "www.sportsland.com.br",
+        "www.corridaecia.com.br",
+        "www.run4fun.com.br",
+        "www.mizuno.com.br",
+        "www.asics.com.br",
+        "www.speedo.com.br",
+        "www.gonew.com.br",
+        "www.poker.com.br",
+        # ── Acessórios / Joias ─────────────────────────────────────────────────
         "www.vivara.com.br",
         "www.pandora.com.br",
-        "www.vivo.com.br",
         "www.balaclava.com.br",
-        # Alimentação / Gourmet
+        "www.rommanel.com.br",
+        "www.life-joias.com.br",
+        "www.bergerson.com.br",
+        "www.jequiti.com.br",
+        "www.meyersjoias.com.br",
+        "www.lacredor.com.br",
+        # ── Alimentação / Gourmet / Suplementos ────────────────────────────────
         "www.mundo-gourmet.com.br",
-        "www.superbom.com.br",
         "www.qualityfood.com.br",
-        # Pet
+        "www.integralmedica.com.br",
+        "www.growth.com.br",
+        "www.probiotica.com.br",
+        "www.max-titanium.com.br",
+        "www.vitafor.com.br",
+        "www.cultivar.com.br",
+        "www.saudavelmente.com.br",
+        "www.emporiobiomarket.com.br",
+        # ── Pet ────────────────────────────────────────────────────────────────
         "www.petlove.com.br",
         "www.cobasi.com.br",
         "www.patacomoficio.com.br",
-        # Infantil
+        "www.petmania.com.br",
+        "www.petcenter.com.br",
+        "www.petz.com.br",
+        "www.petferias.com.br",
+        "www.doghouse.com.br",
+        # ── Infantil / Brinquedos ──────────────────────────────────────────────
         "www.puket.com.br",
         "www.lilica.com.br",
         "www.tip-top.com.br",
+        "www.imaginarium.com.br",
+        "www.grow.com.br",
+        "www.estrela.com.br",
+        "www.toymania.com.br",
+        "www.babytunes.com.br",
+        # ── Farmácia / Saúde ──────────────────────────────────────────────────
+        "www.drogariasaopaulo.com.br",
+        "www.ultrafarma.com.br",
+        "www.drogaraia.com.br",
+        "www.farmaciaindiana.com.br",
+        "www.natue.com.br",
+        "www.drogatel.com.br",
+        # ── Nicho / Long tail (maior chance de WhatsApp) ──────────────────────
+        "www.estrela10.com.br",
+        "www.uaucosmetics.com.br",
+        "www.a-moça.com.br",
+        "www.nandacosmetics.com.br",
+        "www.emporiocriativo.com.br",
+        "www.elo7.com.br",
+        "www.nuvemshop.com.br",
+        "www.caprichosaimport.com.br",
+        "www.atacadao-da-beleza.com.br",
+        "www.modabrasileira.com.br",
+        "www.lojasrenner.com.br",
+        "www.marisa.com.br",
+        "www.riachuelo.com.br",
+        "www.lojasamaral.com.br",
+        "www.atacado.mercadolivre.com.br",
     ]

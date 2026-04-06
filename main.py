@@ -222,6 +222,8 @@ def main():
     parser.add_argument("--domains", default=None,
                         help="Arquivo .txt com domínios candidatos (1 por linha) — "
                              "pula coleta, vai direto para verificação e extração")
+    parser.add_argument("--all", action="store_true",
+                        help="Incluir lojas sem WhatsApp (padrão: exporta só com WhatsApp)")
     args = parser.parse_args()
 
     sources = [s.strip().lower() for s in args.sources.split(",")]
@@ -261,7 +263,18 @@ def main():
         console.print("[red]✗ Nenhum dado extraído.[/red]")
         sys.exit(1)
 
-    # ── Fase 4: Export CSV ────────────────────────────────────────────────────
+    # ── Fase 4: Filtro WhatsApp ───────────────────────────────────────────────
+    if not args.all:
+        before = len(records)
+        records = [r for r in records if r.get("whatsapp")]
+        console.print(
+            f"[cyan]→ Filtro WhatsApp: {len(records)}/{before} lojas com número ativo[/cyan]"
+        )
+        if not records:
+            console.print("[red]✗ Nenhuma loja com WhatsApp encontrada. Use --all para exportar todas.[/red]")
+            sys.exit(1)
+
+    # ── Fase 5: Export CSV ────────────────────────────────────────────────────
     df = export_csv(records, output)
     print_summary(df)
 

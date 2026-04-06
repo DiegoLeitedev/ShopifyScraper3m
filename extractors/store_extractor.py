@@ -24,7 +24,7 @@ from bs4 import BeautifulSoup
 from utils.http import get, get_json, get_with_playwright
 from utils.helpers import (
     extract_cnpj, extract_emails, extract_phones,
-    extract_instagram, extract_whatsapp,
+    extract_instagram, extract_whatsapp, _fmt_whatsapp,
 )
 
 
@@ -75,6 +75,10 @@ def extract_store(domain: str, platform: str = "shopify") -> dict:
     record["nome_loja"] = (og_name["content"].strip() if og_name and og_name.get("content")
                            else (soup.title.string.strip() if soup.title else None))
 
+    # WhatsApp: buscar links wa.me diretamente no HTML antes do texto puro
+    if not record["whatsapp"]:
+        record["whatsapp"] = _find_whatsapp_in_html(soup)
+
     # Dados de contato na homepage
     _fill_contact(record, full_text)
 
@@ -85,6 +89,8 @@ def extract_store(domain: str, platform: str = "shopify") -> dict:
         r = get(base_url + path)
         if r and r.status_code == 200:
             page_soup = BeautifulSoup(r.text, "lxml")
+            if not record["whatsapp"]:
+                record["whatsapp"] = _find_whatsapp_in_html(page_soup)
             _fill_contact(record, page_soup.get_text(" ", strip=True))
 
     # ── Políticas (CNPJ geralmente aparece aqui) ──────────────────────────────
@@ -186,6 +192,46 @@ def _extract_razao_social(text: str, cnpj: str) -> str | None:
         snippet, re.IGNORECASE
     )
     return match.group(1).strip() if match else None
+
+
+def _find_whatsapp_in_html(soup: BeautifulSoup) -> str | None:
+    """
+    Busca WhatsApp diretamente no HTML estruturado — mais confiável que texto puro.
+    Cobre: links <a href="wa.me">, scripts inline, atributos data-*, JSON de widgets.
+    """
+    # 1. Links <a href="https://wa.me/...">
+    for a in soup.find_all("a", href=True):
+        m = re.search(r"wa\.me/(\d{10,13})", a["href"], re.IGNORECASE)
+        if m:
+            return _fmt_whatsapp(m.group(1))
+
+    # 2. Scripts inline (widgets, configurações)
+    for script in soup.find_all("script"):
+        if not script.string:
+            continue
+        src = script.string
+        if "wa.me" in src or "whatsapp" in src.lower():
+            m = re.search(r"wa\.me/(\d{10,13})", src, re.IGNORECASE)
+            if m:
+                return _fmt_whatsapp(m.group(1))
+            # JSON config de widgets
+            m = re.search(
+                r'(?:wpp_number|whatsapp_number|wa_number|phone)["\'\s]*[:=]\s*["\'](\d{10,13})',
+                src, re.IGNORECASE,
+            )
+            if m:
+                return _fmt_whatsapp(m.group(1))
+
+    # 3. Atributos data-* em qualquer tag (botões de widget)
+    for tag in soup.find_all(True):
+        for attr in ("data-phone", "data-number", "data-wa", "data-whatsapp"):
+            val = tag.get(attr, "")
+            if val:
+                digits = re.sub(r"\D", "", val)
+                if 10 <= len(digits) <= 13:
+                    return _fmt_whatsapp(digits)
+
+    return None
 
 
 def _all_filled(record: dict) -> bool:

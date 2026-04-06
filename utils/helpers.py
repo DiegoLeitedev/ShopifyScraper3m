@@ -83,28 +83,55 @@ def extract_whatsapp(text: str) -> str | None:
     Extrai número de WhatsApp de diversas fontes:
     - Links wa.me/55XXXXXXXXXXX
     - api.whatsapp.com/send?phone=
+    - Atributos data-phone / data-number perto de "whatsapp"
+    - Widgets: Zap, Chaty, JivoChat, Tawk, ChatWoot
     - texto com "whatsapp" seguido de número
     - padrão (XX) 9XXXX-XXXX próximo à palavra whatsapp
     """
-    # 1. wa.me link — formato mais confiável
+    # 1. wa.me link — formato mais confiável (com ou sem querystring)
     m = re.search(r"wa\.me/(\d{10,13})", text, re.IGNORECASE)
     if m:
         return _fmt_whatsapp(m.group(1))
 
     # 2. api.whatsapp.com/send?phone=
-    m = re.search(r"api\.whatsapp\.com/send[^\d]{0,10}phone=(\d{10,13})", text, re.IGNORECASE)
+    m = re.search(r"api\.whatsapp\.com/send[^\d]{0,20}phone=(\d{10,13})", text, re.IGNORECASE)
     if m:
         return _fmt_whatsapp(m.group(1))
 
-    # 3. "whatsapp" seguido de número em até 40 chars
-    m = re.search(r"whatsapp[^<\n]{0,40}?(\(?\d{2}\)?\s*9?\s*\d{4}[\s\-]?\d{4})", text, re.IGNORECASE)
+    # 3. data-phone / data-number perto de "whatsapp"
+    m = re.search(
+        r'(?:whatsapp[^"\'<]{0,80}data-(?:phone|number|wa)[=: ]["\']?(\d{10,13})'
+        r'|data-(?:phone|number|wa)[=: ]["\']?(\d{10,13})[^"\'<]{0,80}whatsapp)',
+        text, re.IGNORECASE,
+    )
+    if m:
+        num = m.group(1) or m.group(2)
+        return _fmt_whatsapp(num)
+
+    # 4. Widgets populares BR: Zap (zaplink), Chaty, JivoChat
+    m = re.search(r'["\']phone["\'\s]*[:=]\s*["\'](\d{10,13})["\']', text, re.IGNORECASE)
+    if m:
+        num = m.group(1)
+        if len(num) >= 10:
+            return _fmt_whatsapp(num)
+
+    # 5. JSON config de widgets (wpp_number, whatsapp_number, wa_number)
+    m = re.search(
+        r'(?:wpp_number|whatsapp_number|wa_number|whatsapp_phone)["\'\s]*[:=]\s*["\']?(\d{10,13})',
+        text, re.IGNORECASE,
+    )
+    if m:
+        return _fmt_whatsapp(m.group(1))
+
+    # 6. "whatsapp" seguido de número em até 60 chars
+    m = re.search(r"whatsapp[^<\n]{0,60}?(\(?\d{2}\)?\s*9?\s*\d{4}[\s\-]?\d{4})", text, re.IGNORECASE)
     if m:
         num = re.sub(r"\D", "", m.group(1))
         if len(num) >= 10:
             return _fmt_whatsapp(num)
 
-    # 4. Número seguido de texto "whatsapp" em até 40 chars
-    m = re.search(r"(\(?\d{2}\)?\s*9?\s*\d{4}[\s\-]?\d{4})[^<\n]{0,40}?whatsapp", text, re.IGNORECASE)
+    # 7. Número seguido de texto "whatsapp" em até 60 chars
+    m = re.search(r"(\(?\d{2}\)?\s*9?\s*\d{4}[\s\-]?\d{4})[^<\n]{0,60}?whatsapp", text, re.IGNORECASE)
     if m:
         num = re.sub(r"\D", "", m.group(1))
         if len(num) >= 10:
