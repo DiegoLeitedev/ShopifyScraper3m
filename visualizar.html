@@ -292,29 +292,157 @@ document.addEventListener('drop', e => {
 });
 
 // Dados embutidos (gerados pelo scraper)
-const EMBEDDED_CSV = `dominio,plataforma,nome_loja,whatsapp,telefone,email,instagram,cnpj,razao_social,endereco,cidade,estado,produtos_count,tem_blog,status,data_coleta
-iorane.com.br,vtex,Iorane | Design e tecidos singulares | Coleções exclusivas,(31) 97219-6604,(31) 2010-4222,shoponline@iorane.com.br,@iorane.com.br,26.051.748/0003-79,Whatsa,alças Saias Shorts Parte única Ver todos Macacões Vestidos Acessórios Ver todos Bo,,MG,,True,ativo,2026-04-06T20:37:17Z
-saudavelmente.com.br,lojaintegrada,Saudavelmente Refeições Congeladas,(43) 99969-1316,(43) 99969-1316,contato@saudavelmente.com.br,@saudavelmente.com.br,39.957.148/0001-54,Whatsa,avelmente Refeições Congeladas Fale Conosco Telefone,,,,False,ativo,2026-04-06T20:37:48Z
-infostore.com.br,shopify,Info Store | O melhor Mix em tecnologia,(92) 98417-4781,(92) 98417-4781,faleconosco@infostore.com.br,@infostore.com.br,02.337.524/0001-06,Via Nota Fiscal Formas de Pagamento Ass,ale com o SAC O seu Eletrodoméstico está Aqui 13,,AM,,True,ativo,2026-04-06T20:44:26Z
-marquinhomotos.com.br,vtex,"Marquinho Motos - Capacete, Moto Peças e Acessórios para Motos e Pilotos!",(11) 2501-0323,(11) 2501-0323,sac@marquinhomotos.com.br,@MARQUINHOMOTOS.COM.BR,35.636.876/0001-03,mação de dados e os pedidos poderão ser cancelados automaticame,roduto adicionado à sacola Subtotal,,MT,,True,ativo,2026-04-06T20:41:35Z
-souvie.com.br,nuvemshop,Souvie Cosméticos Orgânicos,(11) 94002-3552,1222685200,sac@souvie.com.br,@souvie_organica,12.226.852/0001-80,,ALE VERÃO KITS DE VERÃO ESSENCIAIS DO DIA CICLOS DA VIDA RECÉM-NASCIDO BEBÊ INFANT,,SP,,False,ativo,2026-04-06T20:40:42Z
-lojakings.com.br,nuvemshop,Loja Kings,(11) 97273-9424,5511972739,sac@lojakings.com.br,@lojakings.com.br,26.636.428/0001-19,frete pagame,RODUTOS SUGERIDOS Ao navegar por este site você aceita o uso de cookies para agiliz,,SE,,False,ativo,2026-04-06T20:40:50Z
-taco.com.br,shopify,TACO | Loja Oficial | Roupas Masculinas e Femininas,(21) 2585-8678,+55 21 2585-8678,atendimento@taco.com.br,@taco.com.br,02.737.654/0035-77,OFF na prime,alças Jeans Calças Bermudas Shorts Feminino Ver todos Blusas Camisas Regatas Jaque,,RJ,,True,ativo,2026-04-06T20:43:00Z
-loungerie.com.br,shopify,"Lingeries, Pijamas, Básicos e Rendas | Loungerie",(11) 2388-0454,(11) 2388-0454,atendimento@loungerie.com.br,@loungerie.com.br,13.513.325/0001-10,é possível fazer uma pesquisa,al Shiny Love Sweet Lace Lançamentos Première Wacoal Shiny Love Sweet Lace Ver tod,,SP,,True,ativo,2026-04-06T20:43:10Z
-turmatube.com.br,nuvemshop,TurmaTube,(15) 99106-3777,5515991063,sac@turmatube.com.br,@turmatube.com.br,50.293.910/0001-88,,Alimentação Babador Copos Pratos Talheres Brinquedos Enxoval Chupetas Escolar Kits,,RN,,False,ativo,2026-04-06T20:42:55Z
-elevelife.com.br,nuvemshop,Eleve Life,(11) 91092-7007,(11) 5555-2470,atendimento@elevelife.com.br,@elevelife.com.br,31.178.848/0001-39,s de pagamento Me,alm Facial Colágeno Eleve Hair Feminino Eleve Hair Masculino Espuma de Limpeza Gel,,,,False,ativo,2026-04-06T20:42:39Z
-coliseu.com.br,shopify,Coliseu: adquira o que há de melhor na joalheria brasileira!,(51) 99656-8693,,coliseu@coliseu.com.br,@coliseu.com.br,88.936.323/0001-32,u.com.br Conheça a Coliseu Acompanhe a Coliseu Formas de Pagame,alheria brasileira,,,,True,ativo,2026-04-06T20:40:44Z
-speedo.com.br,vtex,Speedo Store Online - Nossa força vem da água,(11) 99830-6060,(11) 99830-6060,sac.lojavirtual@speedo.com.br,@speedo.com.br,,,,,,,False,ativo,2026-04-06T20:39:03Z
-corpoidealsuplementos.com.br,tray,Corpo Ideal Suplementos | O maior site de suplementos do Brasil,(55) 1499-1545,(14) 99154-5080,corpoidealsuplementos@yahoo.com,@corpoideal.brasil,,,,,,,False,ativo,2026-04-06T20:38:19Z
-pluglar.com.br,woocommerce,PlugLar – Aramados,(19) 99623-4303,(19) 3557-4673,contato@pluglar.com.br,@pluglar.com.br,,,,,,,False,ativo,2026-04-06T20:37:17Z
-copafer.com.br,shopify,Garantia de Qualidade em Materiais de Construção | Copafer,(11) 4996-6000,(11) 4996-6000,,,55.728.224/0001-06,gamento Preços e condições de pagame,alidade em Materiais de Construção,,,,True,ativo,2026-04-06T20:39:11Z
-compracerta.com.br,shopify,Compra Certa | Tudo o que casa com a sua casa!,(11) 95910-0051,11 95910 0051,,,62.058.318/0007-76,ua reserva pelo consumidor. BUD COMÉRCIO DE ELETRODOMÉSTICOS LTDA.,avoritos Departamentos Seminovos Outlet Geladeiras Lavadoras Fogões Lava louças Mi,,SP,,True,ativo,2026-04-06T20:42:21Z
-animale.com.br,vtex,ANIMALE | Moda que exalta a potência feminina,(21) 3733-7702,21 3733-7702,,,09.611.669/0005-18,CERTIFICADOS ANIMALE CIDADE MARAVILHOSA INDUSTRIA E COME,alta a potência feminina Menu Compre pelo WhatsApp Encontre uma Loja Novidades ANI,,SE,,False,ativo,2026-04-06T20:39:35Z
-tokstok.com.br,vtex,Tok&Stok,(11) 4302-5454,(11) 4280-9144,,,49.732.175/0001-82,escritório. Decoração com design e exclusividade a preços acess,al 0 Ofertas para,,,,False,ativo,2026-04-06T20:41:36Z
-swift.com.br,shopify,Swift,(11) 4020-8588,(11) 4020-8588,,,02.914.460/0382-04,Swift A nossa história Encontre Nossa,Alterar região - - - Categorias Veja nossos Produtos Super Kits Combinações exclus,,,,False,ativo,2026-04-06T20:42:57Z
-usereserva.com,vtex,Reserva | Moda Masculina Autêntica e Estilo Brasileiro,(21) 3609-2550,,,,16.590.234/0064-50,dos Minha Carteira Me,rodutos sem descontos. Troca Facilitada Compre no site ou app e troque em uma das l,,RJ,,True,ativo,2026-04-06T20:41:49Z
-ateen.com.br,vtex,"Ateen - Boho Chic, Versátil e Atemporal",(21) 2528-8368,,,,20.088.729/0001-79,reios Formas de Pagamento Parcelame,al FRETE GRÁTIS EM COMPRAS ACIMA DE R,,RJ,,False,ativo,2026-04-06T20:42:37Z
-midea.com.br,vtex,Loja Online Oficial | Compre direto da Fábrica - Midea,(11) 2123-2600,,,,,,,,,,False,ativo,2026-04-06T20:38:37Z
+const EMBEDDED_CSV = `dominio,plataforma,nome_loja,whatsapp,telefone,email,instagram,cnpj,razao_social,cidade,estado,produtos_count,tem_blog,status,data_coleta
+aguadecoco.com.br,outro,aguadecoco.com.br,,,,,,Moda praia,,,,,ativo,2026-04-07 13:44:49
+amissima.com.br,outro,amissima.com.br,,,,,,Moda feminina – Blumenau/SC,,,,,inativo,2026-04-07 13:44:04
+amorope.com,outro,amorope.com,,,,,,Moda feminina – Auriflama/SP,,,,,ativo,2026-04-07 13:44:01
+anacapri.com.br,outro,anacapri.com.br,,,,,,Calçados femininos,,,,,ativo,2026-04-07 13:44:31
+animale.com.br,outro,ANIMALE,(21) 2503-6885,(21) 2503-6885,,@animalebrasil,09.611.669/0005-18,Moda feminina premium,,,,,ativo,2026-04-07 13:44:02
+aramis.com.br,outro,aramis.com.br,,,,,,Moda masculina,,,,,ativo,2026-04-07 13:44:14
+atacado.modacolmeia.com,outro,Moda Colmeia,(85) 98878-9343,(85) 98878-9343,vtex.render-server@8.179.1,@modacolmeia,63.294.409/0001-88,Moda feminina atacado – Norte/Nordeste,,,,,ativo,2026-04-07 13:44:00
+blueman.com.br,outro,blueman.com.br,,,,,,Sunga / Moda praia masculina,,,,,ativo,2026-04-07 13:44:40
+bo-bo.com.br,outro,bo-bo.com.br,,,,,,Moda feminina contemporânea,,,,,inativo,2026-04-07 13:44:47
+brasilemgotas.com.br,outro,Loja Online de Roupas Femininas,(31) 99675-8441,(31) 99675-8441,contato@brasilemgotas.com.br,@brasilemgotas,22.513.543/0001-45,Moda feminina – BH/MG,,,,,ativo,2026-04-07 13:44:01
+cantao.com.br,outro,Cantão: Site Oficial,(21) 3613-1713,(21) 3613-1713,vtex.render-server@8.179.1,,12.093.445/0002-23,Moda praia,,,,,ativo,2026-04-07 13:44:05
+catarinamina.com.br,outro,catarinamina.com.br,,,,,,Moda artesanal feminina,,,,,inativo,2026-04-07 13:44:22
+colcci.com.br,outro,Colcci,(11) 98629-3294,(11) 98629-3294,atendimento@colcci.com.br,@colccioficial,75.364.570/0007-55,Moda,,,,,ativo,2026-04-07 13:44:16
+coven.com.br,outro,Coven,,,lojavirtual@coven.com.br,@coven_oficial,09.433.725/0001-48,Streetwear feminino,,,,,ativo,2026-04-07 13:44:04
+dudalina.com.br,outro,Dudalina,(11) 98904-5862,(11) 98904-5862,vtex.render-server@8.179.1,,,Camisas premium,,,,,ativo,2026-04-07 13:44:25
+dumond.com.br,outro,Dumond,(14) 3623-9995,(14) 3623-9995,sac@dumond.com.br,@dumondoficial,12.882.179/0001-37,Calçados e bolsas,,,,,ativo,2026-04-07 13:44:34
+dzarm.com.br,outro,DZARM,(47) 8923-2203,(47) 8923-2203,vtex.render-server@8.179.1,,,Moda feminina,,,,,ativo,2026-04-07 13:44:21
+ellus.com.br,outro,ellus.com.br,,,,,,Moda premium,,,,,inativo,2026-04-07 13:44:14
+farm-rio.com,outro,farm-rio.com,,,,,,Moda estampada brasileira,,,,,inativo,2026-04-07 13:44:02
+forum.com.br,outro,Forum,(11) 99430-4972,(11) 99430-4972,atendimento@forum.com.br,@forumoficial,75.364.570/0007-55,Moda premium,,,,,ativo,2026-04-07 13:44:18
+foxton.com.br,outro,foxton.com.br,,,,,,Moda masculina,,,,,ativo,2026-04-07 13:44:11
+gangstyle.com.br,outro,gangstyle.com.br,,,,,,Moda jovem,,,,,inativo,2026-04-07 13:44:36
+handred.com.br,outro,handred.com.br,,,,,,Streetwear,,,,,ativo,2026-04-07 13:44:02
+havaianas.com.br,outro,havaianas.com.br,,,,,,Sandálias / Moda,,,,,ativo,2026-04-07 13:44:26
+hering.com.br,outro,hering.com.br,,,,@hering_oficial,78.876.950/0001-71,Moda básica família,,,,,ativo,2026-04-07 13:44:26
+lennyniemeyer.com.br,outro,Lenny Niemeyer,(21) 3558-0036,(21) 3558-0036,vtex.render-server@8.179.1,@lennyniemeyer,07.543.288/0001-90,Moda praia premium,,,,,ativo,2026-04-07 13:44:49
+lolitta.com.br,outro,lolitta.com.br,,,,,,Moda feminina,,,,,inativo,2026-04-07 13:44:10
+loucosesantos.com.br,outro,"Sapatos, Bolsas, Acessórios em Couro e mais I Loucos & Santos",,,vtex.render-server@8.179.1,,08.960.572/0014-49,Camisetas / Streetwear,,,,,ativo,2026-04-07 13:44:38
+malwee.com.br,outro,"Malwee: Moda feminina, masculina, plus size e Moda infantil",(92) 00000-0000,(92) 00000-0000,vtex.render-server@8.179.1,@malweeoficial,,Moda família,,,,,ativo,2026-04-07 13:44:38
+mash.com.br,outro,Mash,(11) 95186-8838,(11) 95186-8838,vtex.render-server@8.179.1,@cuecasmash,17.678.232/0001-04,Moda masculina,,,,,ativo,2026-04-07 13:44:35
+morenarosa.com.br,outro,Morena Rosa: a marca de roupa feminina da brasileira,(41) 4042-1559,(41) 4042-1559,vtex.render-server@8.179.1,,,Moda feminina – fundada 1993,,,,,ativo,2026-04-07 13:44:01
+morenarose.com.br,outro,Morena Rose,(64) 99238-9645,(64) 99238-9645,leidna.morenarose@gmail.com,@morenarosebiquinis,,Moda feminina,,,,,ativo,2026-04-07 13:44:55
+opiuswear.com.br,outro,opiuswear.com.br,,,,,,Moda praia masculina,,,,,inativo,2026-04-07 13:44:24
+osklen.com,outro,osklen.com,,,,,,Moda eco-premium,,,,,ativo,2026-04-07 13:44:47
+posthaus.com.br,outro,"- Moda Feminina, roupas, acessórios, vestidos, blusas, calças.",(47) 3331-6685,(47) 3331-6685,faleconosco@posthaus.com.br,@posthaus,80.462.138/0001-41,Moda multi – maior e-commerce moda sul,,,,,ativo,2026-04-07 13:44:51
+puket.com.br,outro,Puket,(48) 9192-2171,(48) 9192-2171,vtex.render-server@8.179.1,,,Moda infantil / meias,,,,,ativo,2026-04-07 13:44:34
+redley.com.br,outro,Redley,,,render-extension-loader@0.1.6,@redley85,12.093.445/0002-23,Surf / Moda masculina,,,,,ativo,2026-04-07 13:44:08
+reserva.com.br,outro,reserva.com.br,,,,,,Moda masculina premium,,,,,inativo,2026-04-07 13:44:02
+ripcurl.com.br,shopify,Rip Curl,,,lojavirtual@ripcurl.com.br,@ripcurl_brasil,,Surf / Outdoor,,,,,ativo,2026-04-07 13:44:26
+salinas.com.br,outro,salinas.com.br,,,k@ék8çwpïí9.löì6,,,Moda praia,,,,,ativo,2026-04-07 13:44:39
+salinasswimwear.com.br,outro,salinasswimwear.com.br,,,,,,Moda praia feminina,,,,,inativo,2026-04-07 13:44:47
+schutz.com.br,outro,schutz.com.br,,,,,,Calçados femininos,,,,,ativo,2026-04-07 13:44:30
+simpleorganic.com.br,outro,simpleorganic.com.br,,,,,,Moda sustentável,,,,,ativo,2026-04-07 13:44:47
+sunnari.com.br,outro,sunnari.com.br,,,,,,Moda praia,,,,,inativo,2026-04-07 13:44:23
+tng.com.br,outro,"Moda Masculina: Roupas, Calçados e Acessórios",(11) 4689-9312,(11) 4689-9312,sac@tng.com.br,@tng.oficial,,Moda jovem,,,,,ativo,2026-04-07 13:44:36
+toulon.com.br,outro,TOULON,(27) 99316-7196,(27) 99316-7196,vendas@toulon.com.br,@toulonoficial,28.518.374/0001-12,Moda feminina,,,,,ativo,2026-04-07 13:44:50
+triton.com.br,outro,Triton,(47) 99172-2981,(47) 99172-2981,atendimento@triton.com.br,@tritonoficial,75.364.570/0007-55,Moda masculina,,,,,ativo,2026-04-07 13:44:36
+triya.com.br,outro,triya.com.br,,,vtex.render-server@8.179.1,@triya_brasil,22.087.674/0001-08,Moda praia,,,,,ativo,2026-04-07 13:44:04
+vloog.com.br,outro,vloog.com.br,,,,,,Streetwear,,,,,inativo,2026-04-07 13:44:08
+zattini.com.br,outro,Loja de Moda Online,,,,@zattinibrasil,09.339.936/0001-16,Moda multi – marketplace,,,,,ativo,2026-04-07 13:44:56
+amopet.com.br,outro,amopet.com.br,,,,,,Acessórios pet,,,,,inativo,2026-04-07 13:45:13
+amorpetshop.com.br,outro,amorpetshop.com.br,,,,,,Acessórios pet – +35 mil pedidos,,,,,ativo,2026-04-07 13:45:00
+animalshopbr.com.br,outro,animalshopbr.com.br,,,,,,Petshop multi,,,,,inativo,2026-04-07 13:45:16
+bichinhosfofos.com.br,outro,bichinhosfofos.com.br,,,,,,Pet acessórios,,,,,inativo,2026-04-07 13:45:19
+bichinochic.com.br,outro,bichinochic.com.br,,,,,,Pet fashion,,,,,inativo,2026-04-07 13:45:09
+bichodecasashop.com.br,outro,bichodecasashop.com.br,,,,,,Acessórios pet,,,,,inativo,2026-04-07 13:45:13
+bichodelindo.com.br,outro,bichodelindo.com.br,,,,,,Pet fashion,,,,,inativo,2026-04-07 13:45:22
+bichodemimos.com.br,outro,bichodemimos.com.br,,,,,,Pet presentes,,,,,inativo,2026-04-07 13:45:17
+bichofeliz.com.br,outro,bichofeliz.com.br,,,,,,Petshop,,,,,ativo,2026-04-07 13:45:22
+bitinhashop.com.br,outro,bitinhashop.com.br,,,,,,Acessórios pet,,,,,inativo,2026-04-07 13:45:07
+cachorraostore.com.br,outro,cachorraostore.com.br,,,,,,Pet cachorro,,,,,inativo,2026-04-07 13:45:20
+clubedopet.com.br,outro,clubedopet.com.br,,,,,,Assinatura / acessórios pet,,,,,inativo,2026-04-07 13:45:11
+cobasi.com.br,outro,Cobasi: melhor e mais completa pet shop do Brasil,,,sac@cobasi.com.br,@redecobasi,53.153.938/0016-94,Petshop multi – rede física + online,,,,,ativo,2026-04-07 13:45:04
+dogstyle.com.br,outro,dogstyle.com.br,,,,,,Roupas para cães,,,,,ativo,2026-04-07 13:45:16
+doguinhosshop.com.br,outro,doguinhosshop.com.br,,,,,,Pet cachorros,,,,,inativo,2026-04-07 13:45:17
+dogvida.com.br,outro,dogvida.com.br,,,,,,Produtos naturais pet,,,,,inativo,2026-04-07 13:45:11
+fofinhos.com.br,outro,fofinhos.com.br,,,,,,Pet fashion,,,,,inativo,2026-04-07 13:45:21
+fofurapetshop.com.br,outro,fofurapetshop.com.br,,,,,,Petshop,,,,,inativo,2026-04-07 13:45:19
+gatinosshop.com.br,outro,gatinosshop.com.br,,,,,,Pet gatos,,,,,inativo,2026-04-07 13:45:17
+lojapet.com.br,outro,Petmais,(11) 3488-8000,(11) 3488-8000,,@petmaisoficial,,Petshop,,,,,ativo,2026-04-07 13:45:21
+meuamigopet.com.br,outro,Meuamigopet.com.br,,,,,,Pet acessórios,,,,,ativo,2026-04-07 13:45:18
+meupetfavorito.com.br,outro,Home,,,,,,Acessórios pet,,,,,ativo,2026-04-07 13:45:10
+miaudogs.com.br,outro,miaudogs.com.br,,,,,,Pet cão e gato,,,,,inativo,2026-04-07 13:45:15
+mundoanimal.com.br,outro,mundoanimal.com.br,,,,,,Petshop multi,,,,,inativo,2026-04-07 13:45:11
+patinhaschic.com.br,outro,patinhaschic.com.br,,,,,,Pet fashion,,,,,inativo,2026-04-07 13:45:13
+patudosshop.com.br,outro,patudosshop.com.br,,,,,,Acessórios pet,,,,,inativo,2026-04-07 13:45:09
+petaki.com.br,outro,PetAki,(82) 99996-1035,(82) 99996-1035,,,,Pet fashion,,,,,ativo,2026-04-07 13:45:10
+petboxbr.com.br,outro,petboxbr.com.br,,,,,,Assinatura pet,,,,,inativo,2026-04-07 13:45:11
+petcarinhoshop.com.br,outro,petcarinhoshop.com.br,,,,,,Acessórios pet,,,,,inativo,2026-04-07 13:45:16
+petcasa.com.br,outro,petcasa.com.br,,,,,,Pet multi,,,,,inativo,2026-04-07 13:45:19
+petclickstore.com.br,outro,petclickstore.com.br,,,,,,Pet e-commerce,,,,,inativo,2026-04-07 13:45:18
+petcomamor.com.br,outro,petcomamor.com.br,,,,,,Pet acessórios,,,,,inativo,2026-04-07 13:45:19
+petestilo.com.br,outro,petestilo.com.br,,,,,,Moda pet,,,,,inativo,2026-04-07 13:45:07
+petfancybr.com.br,outro,petfancybr.com.br,,,,,,Pet fashion,,,,,inativo,2026-04-07 13:45:09
+petfeliz.com.br,outro,petfeliz.com.br,,,,,,Petshop,,,,,inativo,2026-04-07 13:45:21
+petfriendsbr.com.br,outro,petfriendsbr.com.br,,,,,,Pet accessories,,,,,inativo,2026-04-07 13:45:15
+petglamourbr.com.br,outro,petglamourbr.com.br,,,,,,Pet luxo,,,,,inativo,2026-04-07 13:45:17
+petgourmetbr.com.br,outro,petgourmetbr.com.br,,,,,,Alimentação natural pet,,,,,inativo,2026-04-07 13:45:11
+petinhochic.com.br,outro,petinhochic.com.br,,,,,,Pet fashion,,,,,inativo,2026-04-07 13:45:18
+petlove.com.br,outro,petlove.com.br,,,,,,Maior petshop online BR,,,,,inativo,2026-04-07 13:45:03
+petlux.com.br,outro,PETLUX,,,contato@lavluxor.com.br,,,Pet luxo,,,,,ativo,2026-04-07 13:45:12
+petmodern.com.br,outro,petmodern.com.br,,,,,,Pet design,,,,,inativo,2026-04-07 13:45:13
+petnatura.com.br,outro,petnatura.com.br,,,,,,Produtos naturais pet,,,,,inativo,2026-04-07 13:45:20
+petshopchique.com.br,outro,petshopchique.com.br,,,,,,Pet fashion,,,,,inativo,2026-04-07 13:45:22
+petz.com.br,outro,petz.com.br,,,,,,Petshop multi – capital aberta,,,,,inativo,2026-04-07 13:45:07
+popularpet.com.br,outro,popularpet.com.br,,,,,,Petshop multi – SJC/SP,,,,,ativo,2026-04-07 13:45:00
+quintalanimal.com.br,outro,quintalanimal.com.br,,,,,,Pet natural,,,,,inativo,2026-04-07 13:45:15
+superpetbr.com.br,outro,superpetbr.com.br,,,,,,Petshop multi,,,,,inativo,2026-04-07 13:45:13
+tudodebicho.com.br,outro,tudodebicho.com.br,,,,,,Petshop online – desde 2016,,,,,ativo,2026-04-07 13:44:57
+vidapetshop.com.br,outro,vidapetshop.com.br,,,,,,Pet saúde e bem-estar,,,,,inativo,2026-04-07 13:45:15
+atelierjoias.com.br,outro,atelierjoias.com.br,,,,,,Joias autorais,,,,,inativo,2026-04-07 13:44:00
+bijouxnet.com.br,outro,BijouxNet,(11) 93253-9704,(11) 93253-9704,contato@bijouxnet.com.br,@bijouxnet,18.328.230/0001-40,Bijoux e semijoias – SP/Jardins,,,,,ativo,2026-04-07 13:43:46
+bijouxpremium.com.br,outro,bijouxpremium.com.br,,,,,,Bijoux premium,,,,,inativo,2026-04-07 13:43:58
+bijouxstore.com.br,outro,bijouxstore.com.br,,,,,,Bijoux,,,,,inativo,2026-04-07 13:43:53
+brasiljoias.com.br,outro,brasiljoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:44:00
+brilhojoias.com.br,outro,brilhojoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:44:00
+carolbjoias.com.br,outro,carolbjoias.com.br,,,,,,Semijoias finas,,,,,inativo,2026-04-07 13:43:55
+chicasemijoias.com.br,outro,Chicasemijoias,(19) 99343-4078,(19) 99343-4078,chicasemijoias21@gmail.com,@chicasemijoias2021,43.540.499/0001-32,Semijoias femininas,,,,,ativo,2026-04-07 13:43:43
+deitosjoias.com.br,outro,Deitos Joias,(54) 99668-7993,(54) 99668-7993,deitosjoias@gmail.com,@deitosjoiass,,Semijoias folheadas ouro 18k / Prata / Aço Inox,,,,,ativo,2026-04-07 13:43:43
+delicatejoias.com.br,outro,delicatejoias.com.br,,,,,,Joias delicadas,,,,,inativo,2026-04-07 13:43:50
+divinajoias.com.br,outro,divinajoias.com.br,,,,,,Semijoias,,,,,ativo,2026-04-07 13:43:57
+ellajoias.com.br,outro,ellajoias.com.br,,,,,,Semijoias,,,,,ativo,2026-04-07 13:43:50
+flashjoias.com.br,outro,flashjoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:50
+foreverjoias.com.br,outro,foreverjoias.com.br,,,,,,Semijoias,,,,,ativo,2026-04-07 13:43:56
+franciscajoias.com.br,outro,Francisca Joias,(19) 99924-0823,(19) 99924-0823,sac@franciscajoias.com.br,@franciscajoias,47.691.119/0001-11,Maior e-commerce semijoias BR,,,,,ativo,2026-04-07 13:43:43
+franjoias.com.br,outro,franjoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:52
+joia10.com.br,outro,joia10.com.br,,,,,,Semijoias folheadas,,,,,inativo,2026-04-07 13:43:52
+joiasdelicadas.com.br,outro,joiasdelicadas.com.br,,,,,,Joias delicadas,,,,,inativo,2026-04-07 13:43:59
+joiasrenata.com.br,outro,joiasrenata.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:48
+juliasimoessemijoias.com.br,outro,JULIA SIMÕES SEMIJOIAS,(31) 97178-4821,(31) 97178-4821,juliasimoessemijoias@gmail.com,@juliasimoes_semijoias,,Semijoias finas – BH/MG,,,,,ativo,2026-04-07 13:43:45
+krisnajoias.com.br,outro,krisnajoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:58
+lacejoias.com.br,outro,lacejoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:56
+laramagnani.com.br,outro,laramagnani.com.br,,,,,,Joias autorais,,,,,inativo,2026-04-07 13:43:48
+luaraq.com.br,outro,luaraq.com.br,,,,,,Joias moedas antigas personalizadas,,,,,inativo,2026-04-07 13:43:48
+luxojoias.com.br,outro,luxojoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:57
+maionjewelry.com.br,outro,maionjewelry.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:55
+milanjoias.com.br,outro,milanjoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:58
+minijoia.com.br,outro,minijoia.com.br,,,,,,Mini joias,,,,,inativo,2026-04-07 13:43:52
+missysemijoias.com.br,outro,missysemijoias.com.br,,,,,,Semijoias finas folheadas,,,,,inativo,2026-04-07 13:43:43
+munrasemijoias.com.br,outro,Munrá Semijoias,(19) 99899-8421,(19) 99899-8421,munra.site@gmail.com,@munrasemijoias,,Semijoias revenda / franquia,,,,,ativo,2026-04-07 13:43:45
+mystoresemijoias.com.br,outro,mystoresemijoias.com.br,,,,,,Acessórios de luxo,,,,,inativo,2026-04-07 13:43:43
+nanajewelry.com.br,outro,nanajewelry.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:48
+natalijewelry.com.br,outro,natalijewelry.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:54
+ourojoias.com.br,outro,ourojoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:59
+patagrejoias.com.br,outro,patagrejoias.com.br,,,,,,Joias artesanais,,,,,inativo,2026-04-07 13:43:57
+perolajoias.com.br,outro,perolajoias.com.br,,,,,,Pérolas e semijoias,,,,,ativo,2026-04-07 13:43:52
+pratafino.com.br,outro,pratafino.com.br,,,,,,Prata 925,,,,,inativo,2026-04-07 13:43:55
+rommanel.com.br,outro,Rommanel,(11) 97148-3889,(11) 97148-3889,vtex.render-server@8.179.1,@rommanel,,Semijoias folheadas – revenda,,,,,ativo,2026-04-07 13:43:45
+semijoiasdaro.com.br,outro,Semijoias da Rô,(67) 99227-6308,(67) 99227-6308,contato@semijoiasdaro.com.br,@semijoiasdarotls,,Semijoias nacionais e importadas,,,,,ativo,2026-04-07 13:43:43
+semijoiasgc.com.br,outro,Semi Jóias GC,(11) 91697-1685,(11) 91697-1685,contato@semijoiasgc.com.br,@goldenclasssemijoias,05.364.800/0001-05,Semijoias atacado e varejo,,,,,ativo,2026-04-07 13:43:43
+sethstore.com.br,outro,sethstore.com.br,,,,,,Joias e alianças – Shopify – BH,,,,,ativo,2026-04-07 13:43:46
+sorijoias.com.br,outro,sorijoias.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:50
+tassianaves.com.br,outro,tassianaves.com.br,,,,,,Joias autorais – Brasília/DF,,,,,inativo,2026-04-07 13:43:56
+terumyacessorios.com.br,outro,Terumy Acessórios,(11) 94360-1710,(11) 94360-1710,contato@terumyacessorios.com.br,@terumyacessorios,11.123.822/0001-86,Acessórios e semijoias – SP,,,,,ativo,2026-04-07 13:43:48
+tiarajewelry.com.br,outro,tiarajewelry.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:54
+todajoia.com.br,outro,todajoia.com.br,,,,,,Semijoias,,,,,inativo,2026-04-07 13:43:56
+trieacessorios.com.br,outro,trieacessorios.com.br,,,,,,Semijoias e acessórios,,,,,inativo,2026-04-07 13:43:46
+uhlalasemijoias.com.br,outro,uhlalasemijoias.com.br,,,,,,Semijoias prata 925 e ouro 18k,,,,,ativo,2026-04-07 13:43:43
+vertti.com.br,outro,Vertti,(44) 3226-2206,(44) 3226-2206,bootstrap@5.0.2,@vertti.tecnologia,,Semijoias luxo,,,,,ativo,2026-04-07 13:43:48
+villasemijoias.com.br,outro,Home,(61) 99592-3815,(61) 99592-3815,shadow@2x.png,@villasemijoias_,11260230/0001-04,Semijoias – Brasília/DF,,,,,ativo,2026-04-07 13:43:45
 `;
 
 loadCSV(EMBEDDED_CSV);
